@@ -68,7 +68,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         boolean successPostBack = true;
         try {
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.TimeupBackAddr, JSON.toJSONString(timeUpReq));
+            String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(timeUpReq));
             TimeUpResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, TimeUpResp.class);
             if (!timeUpResp.success) {
                 successPostBack = false;

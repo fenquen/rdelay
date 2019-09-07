@@ -49,10 +49,10 @@ public class RedisOperator {
     }
 
     public void createTask(Task task) {
-        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, task.executeTime);
+        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, task.executionTime);
         // use lua script to combine them as an atomic one
         /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
-        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executeTime);*/
+        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executionTime);*/
 
     }
 

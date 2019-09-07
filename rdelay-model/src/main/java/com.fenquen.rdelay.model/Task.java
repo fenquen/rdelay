@@ -22,7 +22,7 @@ public class Task {
     /**
      * desired timestamp when the task is executed
      */
-    public long executeTime;
+    public long executionTime;
 
 
     public int maxRetryCount;
@@ -31,9 +31,10 @@ public class Task {
     public int retriedCount;
 
     /**
-     * the address where the task is sent when executeTime is reached i.e. timeup
+     * the application where this task is desired to be executed
+     * the field  only should be like http://host:port
      */
-    public String TimeupBackAddr;
+    public String executionAddr;
 
     /**
      * usually a json string
@@ -50,9 +51,9 @@ public class Task {
         long now = new Date().getTime();
         task.id = UUID.randomUUID().toString();
         task.bizTag = req4Create.bizTag;
-        task.executeTime = now + req4Create.delay;
+        task.executionTime = now + req4Create.delay;
         task.maxRetryCount = req4Create.maxRetryCount;
-        task.TimeupBackAddr = req4Create.TimeupBackAddr;
+        task.executionAddr = req4Create.executionAddr;
         task.content = req4Create.content;
         task.createTime = now;
 

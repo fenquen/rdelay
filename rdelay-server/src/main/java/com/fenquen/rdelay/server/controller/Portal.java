@@ -5,7 +5,7 @@ import com.fenquen.rdelay.model.Task;
 import com.fenquen.rdelay.model.req.Req4CreateTask;
 import com.fenquen.rdelay.model.req.Req4DelTask;
 import com.fenquen.rdelay.model.req.Req4QueryTask;
-import com.fenquen.rdelay.model.resp.Resp4Create;
+import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.model.resp.Resp4Query;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.server.redis.RedisOperator;
@@ -24,7 +24,7 @@ public class Portal {
 
     @RequestMapping(value = "/createTask", method = RequestMethod.POST)
     public RespBase create(@RequestBody Req4CreateTask req4Create) {
-        Resp4Create resp4Create = new Resp4Create();
+        Resp4CreateTask resp4Create = new Resp4CreateTask();
 
         try {
             Task task = Task.buildTaskByReq4Create(req4Create);

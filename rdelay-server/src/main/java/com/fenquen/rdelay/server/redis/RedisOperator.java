@@ -51,8 +51,8 @@ public class RedisOperator {
     public void createTask(Task task) {
         stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, task.executeTime);
         // use lua script to combine them as an atomic one
-        /*stringRedisTemplate.opsForValue().set(task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
-        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.id, task.executeTime);*/
+        /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executeTime);*/
 
     }
 
@@ -73,8 +73,8 @@ public class RedisOperator {
     public void updateTask(Task task) {
         stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSON(task));
         // use lua script to combine them as an atomic one
-       /* long ttlMs = stringRedisTemplate.getExpire(task.id, TimeUnit.MILLISECONDS);
-        stringRedisTemplate.opsForValue().set(task.id, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
+       /* long ttlMs = stringRedisTemplate.getExpire(task.taskId, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
     }
 
     public Set<String> getTaskIDsFromBucket(String bucketName, long begin, long end) {

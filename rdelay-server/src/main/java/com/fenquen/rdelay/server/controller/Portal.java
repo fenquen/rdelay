@@ -2,16 +2,16 @@ package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.Task;
-import com.fenquen.rdelay.model.req.Req4Create;
+import com.fenquen.rdelay.model.req.Req4CreateTask;
+import com.fenquen.rdelay.model.req.Req4DelTask;
+import com.fenquen.rdelay.model.req.Req4QueryTask;
 import com.fenquen.rdelay.model.resp.Resp4Create;
 import com.fenquen.rdelay.model.resp.Resp4Query;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -22,12 +22,11 @@ public class Portal {
     @Autowired
     private RedisOperator redisOperator;
 
-    @RequestMapping("/create")
-    public RespBase create(@RequestParam(name = "req4Create") String req4CreateStr) {
+    @RequestMapping(value = "/createTask", method = RequestMethod.POST)
+    public RespBase create(@RequestBody Req4CreateTask req4Create) {
         Resp4Create resp4Create = new Resp4Create();
 
         try {
-            Req4Create req4Create = JSON.parseObject(req4CreateStr, Req4Create.class);//parseHttpReq(httpReq, Req4Create.class);
             Task task = Task.buildTaskByReq4Create(req4Create);
             redisOperator.createTask(task);
 
@@ -40,12 +39,12 @@ public class Portal {
         return resp4Create;
     }
 
-    @RequestMapping("/query")
-    public RespBase query(@RequestParam String id) {
+    @RequestMapping("/queryTask")
+    public RespBase query(@RequestBody Req4QueryTask req4QueryTask) {
         Resp4Query resp4Query = new Resp4Query();
         try {
-            String taskJsonStr = redisOperator.getTaskJsonStr(id);
-            if (!StringUtils.hasText(taskJsonStr)) {
+            String taskJsonStr = redisOperator.getTaskJsonStr(req4QueryTask.taskId);
+            if (StringUtils.hasText(taskJsonStr)) {
                 resp4Query.task = JSON.parseObject(taskJsonStr, Task.class);
             }
             resp4Query.success();
@@ -56,11 +55,11 @@ public class Portal {
         return resp4Query;
     }
 
-    @RequestMapping("/delete")
-    public RespBase delete(String id) {
+    @RequestMapping("/deleteTask")
+    public RespBase delete(@RequestBody Req4DelTask req4DelTask) {
         RespBase respBase = new RespBase();
         try {
-            redisOperator.deleteTask(id);
+            redisOperator.deleteTask(req4DelTask.taskId);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);

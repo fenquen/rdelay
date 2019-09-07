@@ -12,11 +12,12 @@
         <module>rdelay-model</module>
         <module>rdelay-server</module>
         <module>rdelay-utils</module>
+        <module>rdelay-client</module>
     </modules>
 
     <properties>
         <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
-        <fastjosn.version>1.2.46</fastjosn.version>
+        <fastjson.version>1.2.46</fastjson.version>
     </properties>
 
     <dependencies>
@@ -46,7 +47,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>${fastjosn.version}</version>
+                <version>${fastjson.version}</version>
             </dependency>
 
             <dependency>

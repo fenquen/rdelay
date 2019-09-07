@@ -2,6 +2,7 @@ package com.fenquen.rdelay.utils;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,6 +14,7 @@ public class HttpUtils {
 
     public static String postStringContent(String url, String stringContent) throws Exception {
         HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader("content-type", "application/json");
         httpPost.setEntity(new StringEntity(stringContent));
 
         HttpResponse httpResponse = HTTP_CLIENT.execute(httpPost);

@@ -1,9 +1,9 @@
 package com.fenquen.rdelay.model.req;
 
 /**
- * 生成task的请求
+ * request for create a task
  */
-public class Req4Create {
+public class Req4CreateTask {
 
     public String bizTag;
 

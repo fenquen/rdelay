@@ -1,6 +1,6 @@
 package com.fenquen.rdelay.model;
 
-import com.fenquen.rdelay.model.req.Req4Create;
+import com.fenquen.rdelay.model.req.Req4CreateTask;
 
 import java.util.Date;
 import java.util.UUID;
@@ -44,7 +44,7 @@ public class Task {
     public long createTime;
 
 
-    public static Task buildTaskByReq4Create(Req4Create req4Create) {
+    public static Task buildTaskByReq4Create(Req4CreateTask req4Create) {
         Task task = new Task();
 
         long now = new Date().getTime();

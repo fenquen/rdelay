@@ -61,14 +61,10 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         Task task = JSON.parseObject(taskJsonStr, Task.class);
 
-        TimeUpReq timeUpReq = new TimeUpReq();
-        timeUpReq.id = task.id;
-        timeUpReq.bizTag = task.bizTag;
-        timeUpReq.content = task.content;
 
         boolean successPostBack = true;
         try {
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(timeUpReq));
+            String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(task));
             TimeUpResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, TimeUpResp.class);
             if (!timeUpResp.success) {
                 successPostBack = false;

@@ -20,7 +20,7 @@ public class Task {
     public String bizTag;
 
     /**
-     * desired timestamp when the task is executed
+     * desired unix timestamp ms when the task is executed
      */
     public long executionTime;
 
@@ -32,7 +32,7 @@ public class Task {
 
     /**
      * the application where this task is desired to be executed
-     * the field  only should be like http://host:port
+     * the field  only should be like http://host[[/]|[:port[/]]]
      */
     public String executionAddr;
 
@@ -45,20 +45,7 @@ public class Task {
     public long createTime;
 
 
-    public static Task buildTaskByReq4Create(Req4CreateTask req4Create) {
-        Task task = new Task();
 
-        long now = new Date().getTime();
-        task.id = UUID.randomUUID().toString();
-        task.bizTag = req4Create.bizTag;
-        task.executionTime = now + req4Create.delay;
-        task.maxRetryCount = req4Create.maxRetryCount;
-        task.executionAddr = req4Create.executionAddr;
-        task.content = req4Create.content;
-        task.createTime = now;
-
-        return task;
-    }
 }
 
 

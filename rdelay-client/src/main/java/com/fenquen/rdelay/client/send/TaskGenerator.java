@@ -4,6 +4,5 @@ import com.fenquen.rdelay.model.Task;
 
 public interface TaskGenerator {
 
-
     Task getTask();
 }

@@ -9,12 +9,15 @@ import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.model.resp.Resp4Query;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.server.redis.RedisOperator;
+import com.fenquen.rdelay.utils.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.UUID;
 
 @RestController
 public class Portal {
@@ -24,19 +27,18 @@ public class Portal {
 
     @RequestMapping(value = "/createTask", method = RequestMethod.POST)
     public RespBase create(@RequestBody Req4CreateTask req4Create) {
-        Resp4CreateTask resp4Create = new Resp4CreateTask();
-
+        Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
-            Task task = Task.buildTaskByReq4Create(req4Create);
+            Task task = buildTaskByReq4Create(req4Create);
             redisOperator.createTask(task);
 
-            resp4Create.id = task.id;
-            resp4Create.success();
+            resp4CreateTask.id = task.id;
+            resp4CreateTask.success();
         } catch (Exception e) {
-            resp4Create.fail(e);
+            resp4CreateTask.fail(e);
         }
 
-        return resp4Create;
+        return resp4CreateTask;
     }
 
     @RequestMapping("/queryTask")
@@ -76,6 +78,20 @@ public class Portal {
         String jsonStr = new String(reqBody);
 
         return JSON.parseObject(jsonStr, type);
+    }
 
+    private Task buildTaskByReq4Create(Req4CreateTask req4Create) {
+
+        Task task = new Task();
+
+        task.id = UUID.randomUUID().toString();
+        task.bizTag = req4Create.bizTag;
+        task.executionTime = req4Create.executionTime;
+        task.maxRetryCount = req4Create.maxRetryCount;
+        task.executionAddr = TextUtils.verifyAndModifyHttpSvrAddr(req4Create.executionAddr);
+        task.content = req4Create.content;
+        task.createTime = new Date().getTime();
+
+        return task;
     }
 }

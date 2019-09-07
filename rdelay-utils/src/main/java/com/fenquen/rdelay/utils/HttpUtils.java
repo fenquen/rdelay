@@ -14,7 +14,7 @@ public class HttpUtils {
 
     public static String postStringContent(String url, String stringContent) throws Exception {
         HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader("content-type", "application/json");
+        httpPost.addHeader("content-type", "application/json;charset=UTF-8");
         httpPost.setEntity(new StringEntity(stringContent));
 
         HttpResponse httpResponse = HTTP_CLIENT.execute(httpPost);

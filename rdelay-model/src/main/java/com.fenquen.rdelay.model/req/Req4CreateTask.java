@@ -7,7 +7,7 @@ public class Req4CreateTask {
 
     public String bizTag;
 
-    public long delay;
+    public long executionTime;
 
     public int maxRetryCount;
 

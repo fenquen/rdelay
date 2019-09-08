@@ -17,11 +17,11 @@ public class Receiver {
     private TaskConsumer taskConsumer;
 
     @RequestMapping(value = "/rdelay/receiveTask/STR_CONTENT", method = RequestMethod.POST)
-    public ExecutionResp receiveStrContentTask(@RequestBody StrContentTask task) {
+    public ExecutionResp receiveStrContentTask(@RequestBody StrContentTask strContentTask) {
         ExecutionResp timeUpResp = new ExecutionResp();
         try {
             if (taskConsumer != null) {
-                taskConsumer.consumeTask(task);
+                taskConsumer.consumeTask(strContentTask);
             }
             timeUpResp.success();
         } catch (Exception e) {
@@ -33,7 +33,7 @@ public class Receiver {
     }
 
     @RequestMapping(value = "/rdelay/receiveTask/REFLECT", method = RequestMethod.POST)
-    public ExecutionResp receiveReflectTask(@RequestBody ReflectionTask task) {
+    public ExecutionResp receiveReflectTask(@RequestBody ReflectionTask reflectionTask) {
         ExecutionResp timeUpResp = new ExecutionResp();
         try {
             timeUpResp.success();

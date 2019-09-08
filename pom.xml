@@ -12,7 +12,8 @@
         <module>rdelay-model</module>
         <module>rdelay-server</module>
         <module>rdelay-utils</module>
-        <module>rdelay-client</module>
+        <module>rdelay-client-receive</module>
+        <module>rdelay-client-send</module>
     </modules>
 
     <properties>

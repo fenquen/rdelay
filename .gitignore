@@ -7,3 +7,5 @@ rdelay-utils/rdelay-utils.iml
 rdelay-server/target/
 rdelay-model/target/
 rdelay-utils/target/
+rdelay-client-send/rdelay-client-send.iml
+rdelay-client-receive/rdelay-client-receive.iml

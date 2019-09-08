@@ -1,6 +1,7 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.model.TaskType;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.AbstractTask;
@@ -23,17 +24,29 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.fenquen.rdelay.model.TaskType.REFLECT;
+import static com.fenquen.rdelay.model.TaskType.STR_CONTENT;
+
 @RestController
 public class Portal {
 
     @Autowired
     private RedisOperator redisOperator;
 
-    @RequestMapping(value = "/createTask", method = RequestMethod.POST)
-    public RespBase create(@RequestBody Req4CreateTask req4Create) {
+    @RequestMapping(value = "/createTask/strContentTask", method = RequestMethod.POST)
+    public RespBase createStrContentTask(@RequestBody Req4CreateStrContentTask req4Create) {
+        return process(req4Create);
+    }
+
+    @RequestMapping(value = "/createTask/reflectTask", method = RequestMethod.POST)
+    public RespBase createReflectTask(@RequestBody Req4CreateReflectTask req4Create) {
+        return process(req4Create);
+    }
+
+    private Resp4CreateTask process(Req4CreateTask req4CreateTask) {
         Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
-            AbstractTask task = parseReq4Create(req4Create);
+            AbstractTask task = parseReq4Create(req4CreateTask);
             redisOperator.createTask(task);
 
             resp4CreateTask.id = task.id;
@@ -88,7 +101,7 @@ public class Portal {
     private AbstractTask parseReq4Create(Req4CreateTask req4Create) {
         AbstractTask abstractTask;
 
-        switch (req4Create.taskType) {
+        switch (req4Create.getTaskType()) {
             case STR_CONTENT:
                 abstractTask = new StrContentTask();
                 break;
@@ -106,10 +119,10 @@ public class Portal {
         abstractTask.maxRetryCount = req4Create.maxRetryCount;
         abstractTask.executionAddr = req4Create.executionAddr;
         abstractTask.createTime = new Date().getTime();
-        abstractTask.taskType = req4Create.taskType;
+        abstractTask.taskType = req4Create.getTaskType();
 
         // custom part
-        switch (req4Create.taskType) {
+        switch (req4Create.getTaskType()) {
             case STR_CONTENT:
                 ((StrContentTask) abstractTask).content = ((Req4CreateStrContentTask) req4Create).content;
                 break;

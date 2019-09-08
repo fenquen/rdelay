@@ -1,5 +1,6 @@
 package com.fenquen.rdelay.model.req.create_task;
 
+import com.fenquen.rdelay.model.TaskType;
 import com.fenquen.rdelay.model.annotation.Nullable;
 
 public final class Req4CreateReflectTask extends Req4CreateTask {
@@ -13,6 +14,11 @@ public final class Req4CreateReflectTask extends Req4CreateTask {
 
     @Nullable
     public String[] params;
+
+    @Override
+    public TaskType getTaskType() {
+        return TaskType.REFLECT;
+    }
 
     @Override
     void verifyFieldsInternal() {
@@ -31,4 +37,6 @@ public final class Req4CreateReflectTask extends Req4CreateTask {
             throw new RuntimeException();
         }
     }
+
+    public static final String URL = TaskType.REFLECT.name();
 }

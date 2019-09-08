@@ -13,8 +13,6 @@ import java.util.Collection;
  */
 public abstract class Req4CreateTask {
 
-    public TaskType taskType;
-
     @Nullable
     public String bizTag;
 
@@ -45,6 +43,8 @@ public abstract class Req4CreateTask {
 
         verifyFieldsInternal();
     }
+
+    public abstract TaskType getTaskType();
 
     abstract void verifyFieldsInternal();
 }

@@ -43,7 +43,7 @@ public class Portal {
         return process(req4Create);
     }
 
-    private Resp4CreateTask process(Req4CreateTask req4CreateTask) {
+    private RespBase process(Req4CreateTask req4CreateTask) {
         Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
             AbstractTask task = parseReq4Create(req4CreateTask);

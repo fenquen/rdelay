@@ -90,6 +90,7 @@ public class Receiver implements ApplicationContextAware {
 
             Map<String, Object> beanMap = applicationContext.getBeansOfType(targetClass, true, false);
 
+            // the instance not found,invoke its non-arg constructor
             if (beanMap.size() == 0) {
                 if (targetClass.isInterface() || Modifier.isAbstract(targetClass.getModifiers())) {
                     throw new NoSuchBeanDefinitionException(targetClass);
@@ -97,6 +98,7 @@ public class Receiver implements ApplicationContextAware {
 
                 targetObj = targetClass.newInstance();
             } else {
+                // the 1st instance
                 targetObj = beanMap.values().toArray()[0];
             }
 

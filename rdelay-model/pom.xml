@@ -10,6 +10,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rdelay-model</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.fenquen</groupId>
+            <artifactId>rdelay-utils</artifactId>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>

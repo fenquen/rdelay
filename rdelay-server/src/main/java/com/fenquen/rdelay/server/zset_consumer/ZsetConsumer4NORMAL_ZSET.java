@@ -60,7 +60,6 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         AbstractTask task = JSON.parseObject(taskJsonStr, AbstractTask.class);
 
-
         boolean successPostBack = true;
         try {
             String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(task));

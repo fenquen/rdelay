@@ -14,7 +14,7 @@ public class Receiver {
     @Autowired
     private TaskConsumer taskConsumer;
 
-    @RequestMapping(value = "/rdelay/receiveTask", method = RequestMethod.POST)
+    @RequestMapping(value = "/rdelay/receiveTask/", method = RequestMethod.POST)
     public ExecutionResp receive(@RequestBody AbstractTask task) {
         ExecutionResp timeUpResp = new ExecutionResp();
         try {

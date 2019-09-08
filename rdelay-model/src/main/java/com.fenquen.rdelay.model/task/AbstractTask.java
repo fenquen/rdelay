@@ -1,10 +1,6 @@
 package com.fenquen.rdelay.model.task;
 
 import com.fenquen.rdelay.model.TaskType;
-import com.fenquen.rdelay.model.req.Req4CreateTask;
-
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * a model describing timing task
@@ -40,10 +36,11 @@ public abstract class AbstractTask {
      */
     public String executionAddr;
 
-
     public long createTime;
 
-
+    public final String getMyClazzName() {
+        return getClass().getName();
+    }
 }
 
 

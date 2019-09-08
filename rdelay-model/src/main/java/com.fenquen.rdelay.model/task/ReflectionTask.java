@@ -3,7 +3,7 @@ package com.fenquen.rdelay.model.task;
 /**
  * use reflection to invoke the method on target application
  */
-public class ReflectionTask extends AbstractTask {
+public final class ReflectionTask extends AbstractTask {
 
     public String className;
 

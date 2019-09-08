@@ -1,8 +1,10 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectTask;
+import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.AbstractTask;
-import com.fenquen.rdelay.model.req.Req4CreateTask;
+import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
 import com.fenquen.rdelay.model.req.Req4DelTask;
 import com.fenquen.rdelay.model.req.Req4QueryTask;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
@@ -13,7 +15,6 @@ import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +45,7 @@ public class Portal {
         return resp4CreateTask;
     }
 
-    @RequestMapping("/queryTask")
+    // @RequestMapping("/queryTask")
     public RespBase query(@RequestBody Req4QueryTask req4QueryTask) {
         Resp4Query resp4Query = new Resp4Query();
         try {
@@ -83,6 +84,7 @@ public class Portal {
         return JSON.parseObject(jsonStr, type);
     }
 
+    @SuppressWarnings("ConstantConditions")
     private AbstractTask parseReq4Create(Req4CreateTask req4Create) {
         AbstractTask abstractTask;
 
@@ -102,20 +104,23 @@ public class Portal {
         abstractTask.bizTag = req4Create.bizTag;
         abstractTask.executionTime = req4Create.executionTime;
         abstractTask.maxRetryCount = req4Create.maxRetryCount;
-        abstractTask.executionAddr = TextUtils.verifyAndModifyHttpSvrAddr(req4Create.executionAddr);
+        abstractTask.executionAddr = req4Create.executionAddr;
         abstractTask.createTime = new Date().getTime();
+        abstractTask.taskType = req4Create.taskType;
 
         // custom part
         switch (req4Create.taskType) {
             case STR_CONTENT:
-                ((StrContentTask) abstractTask).content = req4Create.content;
+                ((StrContentTask) abstractTask).content = ((Req4CreateStrContentTask) req4Create).content;
                 break;
             case REFLECT:
                 ReflectionTask reflectionTask = (ReflectionTask) abstractTask;
-                reflectionTask.className = req4Create.className;
-                reflectionTask.methodName = req4Create.methodName;
-                reflectionTask.paramTypeNames = req4Create.paramTypeNames;
-                reflectionTask.params = req4Create.params;
+                Req4CreateReflectTask req4CreateReflectTask = (Req4CreateReflectTask) req4Create;
+
+                reflectionTask.className = req4CreateReflectTask.className;
+                reflectionTask.methodName = req4CreateReflectTask.methodName;
+                reflectionTask.paramTypeNames = req4CreateReflectTask.paramTypeNames;
+                reflectionTask.params = req4CreateReflectTask.params;
                 break;
         }
 

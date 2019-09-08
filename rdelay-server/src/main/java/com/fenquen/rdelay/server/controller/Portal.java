@@ -33,12 +33,12 @@ public class Portal {
     @Autowired
     private RedisOperator redisOperator;
 
-    @RequestMapping(value = "/createTask/strContentTask", method = RequestMethod.POST)
+    @RequestMapping(value = "/createTask/STR_CONTENT", method = RequestMethod.POST)
     public RespBase createStrContentTask(@RequestBody Req4CreateStrContentTask req4Create) {
         return process(req4Create);
     }
 
-    @RequestMapping(value = "/createTask/reflectTask", method = RequestMethod.POST)
+    @RequestMapping(value = "/createTask/REFLECT", method = RequestMethod.POST)
     public RespBase createReflectTask(@RequestBody Req4CreateReflectTask req4Create) {
         return process(req4Create);
     }

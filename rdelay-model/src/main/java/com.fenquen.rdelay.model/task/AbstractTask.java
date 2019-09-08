@@ -31,7 +31,7 @@ public abstract class AbstractTask {
     public int retriedCount;
 
     /**
-     * the application where this task is desired to be executed
+     * the application server address where this task is desired to be executed
      * the field  only should be like http://host[[/]|[:port[/]]]
      */
     public String executionAddr;

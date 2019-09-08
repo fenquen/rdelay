@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Receiver {
 
-    @Autowired
+    @Autowired(required = false)
     private TaskConsumer taskConsumer;
 
     @RequestMapping(value = "/rdelay/receiveTask/", method = RequestMethod.POST)
     public ExecutionResp receive(@RequestBody AbstractTask task) {
         ExecutionResp timeUpResp = new ExecutionResp();
         try {
-            taskConsumer.consumeTask(task);
+            if (taskConsumer != null) {
+                taskConsumer.consumeTask(task);
+            }
             timeUpResp.success();
         } catch (Exception e) {
             e.printStackTrace();

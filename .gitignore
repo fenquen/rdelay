@@ -4,3 +4,6 @@ rdelay.iml
 rdelay-model/rdelay-model.iml
 rdelay-server/rdelay-server.iml
 rdelay-utils/rdelay-utils.iml
+rdelay-server/target/
+rdelay-model/target/
+rdelay-utils/target/

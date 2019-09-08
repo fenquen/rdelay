@@ -1,4 +1,4 @@
-package com.fenquen.rdelay.model.timeup;
+package com.fenquen.rdelay.model.execution;
 
 public class TimeUpReq {
     public String taskId;

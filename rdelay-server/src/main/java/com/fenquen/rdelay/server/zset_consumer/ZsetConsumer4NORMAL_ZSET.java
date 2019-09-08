@@ -2,9 +2,8 @@ package com.fenquen.rdelay.server.zset_consumer;
 
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.server.config.Config;
-import com.fenquen.rdelay.model.Task;
-import com.fenquen.rdelay.model.timeup.TimeUpReq;
-import com.fenquen.rdelay.model.timeup.TimeUpResp;
+import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.execution.ExecutionResp;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.HttpUtils;
 import org.slf4j.Logger;
@@ -59,13 +58,13 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         redisOperator.normal2Temp(taskId, System.currentTimeMillis());
 
-        Task task = JSON.parseObject(taskJsonStr, Task.class);
+        AbstractTask task = JSON.parseObject(taskJsonStr, AbstractTask.class);
 
 
         boolean successPostBack = true;
         try {
             String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(task));
-            TimeUpResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, TimeUpResp.class);
+            ExecutionResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
             if (!timeUpResp.success) {
                 successPostBack = false;
             }

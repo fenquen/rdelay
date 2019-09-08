@@ -1,5 +1,6 @@
-package com.fenquen.rdelay.model;
+package com.fenquen.rdelay.model.task;
 
+import com.fenquen.rdelay.model.TaskType;
 import com.fenquen.rdelay.model.req.Req4CreateTask;
 
 import java.util.Date;
@@ -8,7 +9,7 @@ import java.util.UUID;
 /**
  * a model describing timing task
  */
-public class Task {
+public abstract class AbstractTask {
     /**
      * unique tag to be distinguished
      */
@@ -18,6 +19,9 @@ public class Task {
      * business tag
      */
     public String bizTag;
+
+
+    public TaskType taskType;
 
     /**
      * desired unix timestamp ms when the task is executed
@@ -36,14 +40,8 @@ public class Task {
      */
     public String executionAddr;
 
-    /**
-     * usually a json string
-     */
-    public String content;
-
 
     public long createTime;
-
 
 
 }

@@ -2,7 +2,7 @@ package com.fenquen.rdelay.server.redis;
 
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.server.config.Config;
-import com.fenquen.rdelay.model.Task;
+import com.fenquen.rdelay.model.task.AbstractTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,6 +17,7 @@ import java.util.Set;
 
 @Component
 public class RedisOperator {
+
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -48,7 +49,7 @@ public class RedisOperator {
         luaScript4UpdateTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/updateTask.lua")));
     }
 
-    public void createTask(Task task) {
+    public void createTask(AbstractTask task) {
         stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, task.executionTime);
         // use lua script to combine them as an atomic one
         /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
@@ -70,7 +71,7 @@ public class RedisOperator {
          stringRedisTemplate.opsForZSet().remove(Config.RETRY_ZSET, taskId);*/
     }
 
-    public void updateTask(Task task) {
+    public void updateTask(AbstractTask task) {
         stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSON(task));
         // use lua script to combine them as an atomic one
        /* long ttlMs = stringRedisTemplate.getExpire(task.taskId, TimeUnit.MILLISECONDS);

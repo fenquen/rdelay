@@ -1,13 +1,8 @@
 package com.fenquen.rdelay.client.receive;
 
-import com.fenquen.rdelay.model.Task;
-import com.fenquen.rdelay.model.timeup.TimeUpReq;
-import com.fenquen.rdelay.model.timeup.TimeUpResp;
-import org.springframework.beans.BeansException;
+import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.execution.ExecutionResp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,8 +15,8 @@ public class Receiver {
     private TaskConsumer taskConsumer;
 
     @RequestMapping(value = "/rdelay/receiveTask", method = RequestMethod.POST)
-    public TimeUpResp receive(@RequestBody Task task) {
-        TimeUpResp timeUpResp = new TimeUpResp();
+    public ExecutionResp receive(@RequestBody AbstractTask task) {
+        ExecutionResp timeUpResp = new ExecutionResp();
         try {
             taskConsumer.consumeTask(task);
             timeUpResp.success();

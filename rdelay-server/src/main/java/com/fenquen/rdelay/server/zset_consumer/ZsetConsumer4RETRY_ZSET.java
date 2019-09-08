@@ -12,6 +12,7 @@ import java.util.Set;
 @EnableScheduling
 @Component
 public class ZsetConsumer4RETRY_ZSET extends ZsetConsumerBase {
+
     @Autowired
     private RedisOperator redisOperator;
 
@@ -21,7 +22,7 @@ public class ZsetConsumer4RETRY_ZSET extends ZsetConsumerBase {
         long now = System.currentTimeMillis();
 
         // TASK_EXPIRE_MS
-        long begin = now - Config.TASK_EXPIRE_MS ;
+        long begin = now - Config.TASK_EXPIRE_MS;
 
         Set<String> taskIds = redisOperator.getTaskIDsFromBucket(Config.RETRY_ZSET, begin, now);
         for (String taskId : taskIds) {

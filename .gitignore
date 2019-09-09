@@ -9,3 +9,9 @@ rdelay-model/target/
 rdelay-utils/target/
 rdelay-client-send/rdelay-client-send.iml
 rdelay-client-receive/rdelay-client-receive.iml
+rdelay-example/rdelay-example-client-receiver/rdelay-example-client-receiver.iml
+rdelay-example/rdelay-example-client-sender/rdelay-example-client-sender.iml
+rdelay-example/rdelay-example-client-sender/target/
+rdelay-client-receiver/target/
+rdelay-client-sender/target/classes/
+rdelay-example/rdelay-example-client-receiver/target/

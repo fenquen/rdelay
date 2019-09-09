@@ -1,6 +1,9 @@
 package com.fenquen.rdelay.server.zset_consumer;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.task.ReflectionTask;
+import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.model.execution.ExecutionResp;
@@ -29,8 +32,8 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
     private static final List<LinkedBlockingQueue<String>> TASK_ID_QUEUE_LIST = new ArrayList<>(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT);
 
-    private static final ExecutorService TASK_ID_QUEUE_CONSUMER_POOL = Executors.newFixedThreadPool(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT, Runnable -> {
-        Thread thread = new Thread();
+    private static final ExecutorService TASK_ID_QUEUE_CONSUMER_POOL = Executors.newFixedThreadPool(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT, runnable -> {
+        Thread thread = new Thread(runnable);
         thread.setName("TASK_ID_QUEUE_PROCESS_" + thread.getId());
         thread.setDaemon(true);
         return thread;
@@ -48,21 +51,42 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         long begin = now - Config.TASK_EXPIRE_MS;
 
         Set<String> taskIds = redisOperator.getTaskIDsFromBucket(Config.NORMAL_ZSET, begin, now);
+        // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskId count " + taskIds.size());
+        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
         for (String taskId : taskIds) {
             dispatchTaskId2Queue(taskId);
         }
     }
 
-    private void processTaskIdFromNormalZset(String taskId) {
-        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+    private void dispatchTaskId2Queue(String taskId) {
+        //  LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET " + taskId);
+        TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
+    }
 
+    private void processTaskIdFromNormalZset(String taskId) {
         redisOperator.normal2Temp(taskId, System.currentTimeMillis());
 
-        AbstractTask task = JSON.parseObject(taskJsonStr, AbstractTask.class);
+        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+
+        // not an elegant style to determine which sub class by a json string barely,need to be optimized
+        String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
+        TaskType taskType = TaskType.valueOf(taskTypeStr);
+
+        AbstractTask task = null;
+        switch (taskType) {
+            case REFLECT:
+                task = JSON.parseObject(taskJsonStr, ReflectionTask.class);
+                break;
+            case STR_CONTENT:
+                task = JSON.parseObject(taskJsonStr, StrContentTask.class);
+                break;
+        }
 
         boolean successPostBack = true;
         try {
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.executionAddr, JSON.toJSONString(task));
+            LOGGER.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ZsetConsumer4NORMAL_ZSET postStringContent " + task.taskReceiveUrl);
+            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl , taskJsonStr);
+            LOGGER.info("ZsetConsumer4NORMAL_ZSET postStringContent " + timeUpRespJsonStr);
             ExecutionResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
             if (!timeUpResp.success) {
                 successPostBack = false;
@@ -72,9 +96,8 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
             LOGGER.error(e.getMessage(), e);
         }
 
-        redisOperator.deleteTask(taskId);
-
         if (successPostBack) {
+            redisOperator.deleteTask(taskId);
             return;
         }
 
@@ -93,21 +116,24 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
         redisOperator.temp2Retry(taskId, score);
-
-    }
-
-    private void dispatchTaskId2Queue(String taskId) {
-        TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
     }
 
     @Override
     public void afterPropertiesSet() {
+
         IntStream.range(0, Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).forEach(a -> {
             TASK_ID_QUEUE_LIST.add(new LinkedBlockingQueue<>());
             TASK_ID_QUEUE_CONSUMER_POOL.submit(() -> {
                 LinkedBlockingQueue<String> targetQueue = TASK_ID_QUEUE_LIST.get(a);
                 for (; ; ) {
-                    processTaskIdFromNormalZset(targetQueue.take());
+                    try {
+                        String taskId = targetQueue.take();
+                        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from queue " + taskId);
+                        processTaskIdFromNormalZset(taskId);
+                    } catch (Exception e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
+
                 }
             });
         });

@@ -1,8 +1,7 @@
 package com.fenquen.rdealy.example.client.receiver;
 
-import com.fenquen.rdelay.client.receive.StrContentTaskConsumer;
+import com.fenquen.rdelay.client.receiver.StrContentTaskConsumer;
 import com.fenquen.rdelay.model.task.StrContentTask;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component

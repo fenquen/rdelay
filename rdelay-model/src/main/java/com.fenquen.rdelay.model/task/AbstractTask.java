@@ -30,11 +30,7 @@ public abstract class AbstractTask {
 
     public int retriedCount;
 
-    /**
-     * the application server address where this task is desired to be executed
-     * the field  only should be like http://host[[/]|[:port[/]]]
-     */
-    public String executionAddr;
+    public String taskReceiveUrl;
 
     public long createTime;
 

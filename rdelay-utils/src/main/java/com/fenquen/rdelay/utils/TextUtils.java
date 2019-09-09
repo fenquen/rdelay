@@ -7,7 +7,7 @@ public class TextUtils {
 
     public static String verifyAndModifyHttpSvrAddr(String httpSvrAddr) {
         if (!HTTP_SVR_ADDR_PATTERN.matcher(httpSvrAddr).matches()) {
-            throw new RuntimeException("httpSvrAddr pattern incorrect");
+            throw new RuntimeException("httpSvrAddr pattern incorrect,should be like http(s)://host[[/]|[:port[/]]]");
         }
 
         return httpSvrAddr.substring(0, httpSvrAddr.indexOf("/", httpSvrAddr.indexOf("//")));

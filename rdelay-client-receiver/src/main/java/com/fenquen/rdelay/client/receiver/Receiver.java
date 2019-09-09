@@ -1,13 +1,11 @@
-package com.fenquen.rdelay.client.receive;
+package com.fenquen.rdelay.client.receiver;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.model.execution.ExecutionResp;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,14 +24,14 @@ public class Receiver implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 
     @Autowired(required = false)
-    private TaskConsumer taskConsumer;
+    private StrContentTaskConsumer strContentTaskConsumer;
 
     @RequestMapping(value = "/rdelay/receiveTask/STR_CONTENT", method = RequestMethod.POST)
     public ExecutionResp receiveStrContentTask(@RequestBody StrContentTask strContentTask) {
         ExecutionResp timeUpResp = new ExecutionResp();
         try {
-            if (taskConsumer != null) {
-                taskConsumer.consumeTask(strContentTask);
+            if (strContentTaskConsumer != null) {
+                strContentTaskConsumer.consumeTask(strContentTask);
             }
             timeUpResp.success();
         } catch (Exception e) {
@@ -113,6 +111,7 @@ public class Receiver implements ApplicationContextAware {
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        System.out.println("setApplicationContext");
         this.applicationContext = applicationContext;
     }
 }

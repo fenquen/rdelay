@@ -14,6 +14,7 @@
         <module>rdelay-utils</module>
         <module>rdelay-client-receiver</module>
         <module>rdelay-client-sender</module>
+        <module>rdelay-example</module>
     </modules>
 
     <properties>

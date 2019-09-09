@@ -50,7 +50,7 @@ public class RedisOperator {
     }
 
     public void createTask(AbstractTask task) {
-        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, task.executionTime);
+        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS+"", task.executionTime+"");
         // use lua script to combine them as an atomic one
         /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
         stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executionTime);*/
@@ -72,7 +72,7 @@ public class RedisOperator {
     }
 
     public void updateTask(AbstractTask task) {
-        stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSON(task));
+        stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSONString(task));
         // use lua script to combine them as an atomic one
        /* long ttlMs = stringRedisTemplate.getExpire(task.taskId, TimeUnit.MILLISECONDS);
         stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
@@ -99,7 +99,7 @@ public class RedisOperator {
     }
 
     public void transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
-        stringRedisTemplate.execute(luaScript4TransferBetweenBuckets, Arrays.asList(srcZsetName, destZsetName), taskId, score);
+        stringRedisTemplate.execute(luaScript4TransferBetweenBuckets, Arrays.asList(srcZsetName, destZsetName), taskId, score+"");
         // use lua script to combine them as an atomic one
         /* stringRedisTemplate.opsForZSet().add(destBucketName, taskId, score);
            stringRedisTemplate.opsForZSet().remove(srcBuckName, taskId);*/

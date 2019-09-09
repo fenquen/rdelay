@@ -5,8 +5,6 @@ import com.fenquen.rdelay.model.annotation.Nullable;
 import com.fenquen.rdelay.utils.TextUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * request for create a task
@@ -20,7 +18,13 @@ public abstract class Req4CreateTask {
 
     public Integer maxRetryCount = 3;
 
-    public String executionAddr;
+    /**
+     * the application server address where this task is desired to be executed <br>
+     * the field  only should be like http(s)://host[[/]|[:port[/]]]
+     */
+    public String executionAppSvrAddr;
+
+    private String taskReceiveUrl;
 
     public void verifyFields() throws Exception {
         Field[] fields = getClass().getFields();
@@ -35,7 +39,8 @@ public abstract class Req4CreateTask {
             }
         }
 
-        TextUtils.verifyAndModifyHttpSvrAddr(executionAddr);
+        TextUtils.verifyAndModifyHttpSvrAddr(executionAppSvrAddr);
+        taskReceiveUrl = executionAppSvrAddr + "/rdelay/receiveTask/" + getTaskType().name();
 
         if (System.currentTimeMillis() >= executionTime) {
             throw new RuntimeException("not a valid executionTime,System.currentTimeMillis() >= executionTime");
@@ -47,4 +52,8 @@ public abstract class Req4CreateTask {
     public abstract TaskType getTaskType();
 
     abstract void verifyFieldsInternal();
+
+    public String getTaskReceiveUrl() {
+        return taskReceiveUrl;
+    }
 }

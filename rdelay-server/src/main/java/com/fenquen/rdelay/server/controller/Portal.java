@@ -1,7 +1,6 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.TaskType;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.AbstractTask;
@@ -14,7 +13,8 @@ import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.redis.RedisOperator;
-import com.fenquen.rdelay.utils.TextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.UUID;
 
-import static com.fenquen.rdelay.model.TaskType.REFLECT;
-import static com.fenquen.rdelay.model.TaskType.STR_CONTENT;
-
 @RestController
 public class Portal {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Portal.class);
 
     @Autowired
     private RedisOperator redisOperator;
@@ -52,6 +50,7 @@ public class Portal {
             resp4CreateTask.id = task.id;
             resp4CreateTask.success();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             resp4CreateTask.fail(e);
         }
 
@@ -113,11 +112,11 @@ public class Portal {
         }
 
         // common part
-        abstractTask.id = UUID.randomUUID().toString();
+        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString();
         abstractTask.bizTag = req4Create.bizTag;
         abstractTask.executionTime = req4Create.executionTime;
         abstractTask.maxRetryCount = req4Create.maxRetryCount;
-        abstractTask.executionAddr = req4Create.executionAddr;
+        abstractTask.taskReceiveUrl = req4Create.getTaskReceiveUrl();
         abstractTask.createTime = new Date().getTime();
         abstractTask.taskType = req4Create.getTaskType();
 

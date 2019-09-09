@@ -8,3 +8,7 @@ reached by now and then send them back to the url specified by each task respect
 
 ### Attention
 The framework is now very primitive,there is much work ahead.Use it at your own risk.
+
+
+### Rough structure
+![Rough structure](./assets/rdealy.png)

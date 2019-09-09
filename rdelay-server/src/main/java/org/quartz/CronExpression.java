@@ -1626,8 +1626,7 @@ public final class CronExpression implements Serializable, Cloneable {
             case 12:
                 return 31;
             default:
-                throw new IllegalArgumentException("Illegal month number: "
-                        + monthNum);
+                throw new IllegalArgumentException("Illegal month number: " + monthNum);
         }
     }
     

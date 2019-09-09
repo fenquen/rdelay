@@ -13,6 +13,7 @@ import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.redis.RedisOperator;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +98,7 @@ public class Portal {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private AbstractTask parseReq4Create(Req4CreateTask req4Create) {
+    private AbstractTask parseReq4Create(Req4CreateTask req4Create) throws Exception {
         AbstractTask abstractTask;
 
         switch (req4Create.getTaskType()) {
@@ -114,11 +115,19 @@ public class Portal {
         // common part
         abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString();
         abstractTask.bizTag = req4Create.bizTag;
+        abstractTask.enableCron = req4Create.enableCron;
         abstractTask.executionTime = req4Create.executionTime;
+        abstractTask.cronExpression = req4Create.cronExpression;
         abstractTask.maxRetryCount = req4Create.maxRetryCount;
         abstractTask.taskReceiveUrl = req4Create.getTaskReceiveUrl();
         abstractTask.createTime = new Date().getTime();
         abstractTask.taskType = req4Create.getTaskType();
+
+        // verify the cron expression
+        if (abstractTask.enableCron) {
+            
+        }
+
 
         // custom part
         switch (req4Create.getTaskType()) {

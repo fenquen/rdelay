@@ -64,7 +64,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
     }
 
     private void processTaskIdFromNormalZset(String taskId) {
-        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.=
+        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.
         if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
             return;
         }

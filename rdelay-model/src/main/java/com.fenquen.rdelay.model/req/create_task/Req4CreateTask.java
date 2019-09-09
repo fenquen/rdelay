@@ -14,7 +14,14 @@ public abstract class Req4CreateTask {
     @Nullable
     public String bizTag;
 
+    public Boolean enableCron = false;
+
+    @Nullable
     public Long executionTime;
+
+    @Nullable
+    public String cronExpression;
+
 
     public Integer maxRetryCount = 3;
 
@@ -25,6 +32,7 @@ public abstract class Req4CreateTask {
     public String executionAppSvrAddr;
 
     private String taskReceiveUrl;
+
 
     public void verifyFields() throws Exception {
         Field[] fields = getClass().getFields();
@@ -42,8 +50,16 @@ public abstract class Req4CreateTask {
         TextUtils.verifyAndModifyHttpSvrAddr(executionAppSvrAddr);
         taskReceiveUrl = executionAppSvrAddr + "/rdelay/receiveTask/" + getTaskType().name();
 
-        if (System.currentTimeMillis() >= executionTime) {
-            throw new RuntimeException("not a valid executionTime,System.currentTimeMillis() >= executionTime");
+        // use cron or not
+        if (enableCron) {
+            if (null == cronExpression || "".equals(cronExpression.trim())) {
+                throw new IllegalArgumentException("cronExpression is virtually empty when cron enabled");
+            }
+        } else {
+            if (System.currentTimeMillis() >= executionTime) {
+                throw new RuntimeException("not a valid executionTime,System.currentTimeMillis() >= executionTime");
+            }
+
         }
 
         verifyFieldsInternal();

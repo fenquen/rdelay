@@ -16,17 +16,18 @@ public abstract class AbstractTask {
      */
     public String bizTag;
 
-
     public TaskType taskType;
+
+    public Boolean enableCron;
 
     /**
      * desired unix timestamp ms when the task is executed
      */
     public long executionTime;
 
+    public String cronExpression;
 
     public int maxRetryCount;
-
 
     public int retriedCount;
 

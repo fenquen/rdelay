@@ -6,7 +6,7 @@ local score = ARGV[2];
 
 -- taskId is not in srcZset, return directly
 if (redis.call('ZRANK', srcZsetName, taskId) == nil) then
-    return true;
+    return false;
 end;
 
 

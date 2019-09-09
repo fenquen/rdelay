@@ -1,5 +1,5 @@
 # rdelay
-a redis-based lightweight timing framework powered by spring boot as personal experimental work
+a redis-based lightweight distributable timing framework powered by spring boot as personal experimental work
 
 ### Theory
 Use redis ZSET to maintain taskIds which are ordered by their execution time asc,get the tasks whose execution time is 
@@ -11,10 +11,10 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 
 
 ### Rough structure
-![Rough structure](./assets/rdealy.png)
+![Rough structure](./assets/rdelay.png)
 
 
-### Usage
+### Usage (StrContentTask)
 
 #### sender
 ```java

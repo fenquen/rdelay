@@ -15,3 +15,6 @@ rdelay-example/rdelay-example-client-sender/target/
 rdelay-client-receiver/target/
 rdelay-client-sender/target/classes/
 rdelay-example/rdelay-example-client-receiver/target/
+rdelay-client-receiver/rdelay-client-receiver.iml
+rdelay-client-sender/rdelay-client-sender.iml
+rdelay-example/rdelay-example.iml

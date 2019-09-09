@@ -50,7 +50,7 @@ public class RedisOperator {
     }
 
     public void createTask(AbstractTask task) {
-        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS+"", task.executionTime+"");
+        stringRedisTemplate.execute(luaScript4CreateTask, Collections.singletonList(Config.NORMAL_ZSET), task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS + "", task.executionTime + "");
         // use lua script to combine them as an atomic one
         /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
         stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executionTime);*/
@@ -82,8 +82,8 @@ public class RedisOperator {
         return stringRedisTemplate.opsForZSet().rangeByScore(bucketName, begin, end, 0, Config.BUCKET_PROCESS_BATCH_SIZE);
     }
 
-    public void normal2Temp(String taskId, long score) {
-        transferBetweenZsets(Config.NORMAL_ZSET, Config.TEMP_ZSET, taskId, score);
+    public Boolean normal2Temp(String taskId, long score) {
+        return transferBetweenZsets(Config.NORMAL_ZSET, Config.TEMP_ZSET, taskId, score);
     }
 
     public void temp2Delay(String taskId, long score) {
@@ -98,8 +98,8 @@ public class RedisOperator {
         transferBetweenZsets(Config.RETRY_ZSET, Config.NORMAL_ZSET, taskId, score);
     }
 
-    public void transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
-        stringRedisTemplate.execute(luaScript4TransferBetweenBuckets, Arrays.asList(srcZsetName, destZsetName), taskId, score+"");
+    public Boolean transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
+        return stringRedisTemplate.execute(luaScript4TransferBetweenBuckets, Arrays.asList(srcZsetName, destZsetName), taskId, score + "");
         // use lua script to combine them as an atomic one
         /* stringRedisTemplate.opsForZSet().add(destBucketName, taskId, score);
            stringRedisTemplate.opsForZSet().remove(srcBuckName, taskId);*/

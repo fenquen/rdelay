@@ -59,12 +59,15 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
     }
 
     private void dispatchTaskId2Queue(String taskId) {
-        //  LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET " + taskId);
+        // the lua transfer script can tackle "if the same taskId is still in the corresponding queue"
         TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
     }
 
     private void processTaskIdFromNormalZset(String taskId) {
-        redisOperator.normal2Temp(taskId, System.currentTimeMillis());
+        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.=
+        if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
+            return;
+        }
 
         String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
 
@@ -85,7 +88,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         boolean successPostBack = true;
         try {
             LOGGER.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ZsetConsumer4NORMAL_ZSET postStringContent " + task.taskReceiveUrl);
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl , taskJsonStr);
+            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
             LOGGER.info("ZsetConsumer4NORMAL_ZSET postStringContent " + timeUpRespJsonStr);
             ExecutionResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
             if (!timeUpResp.success) {
@@ -120,7 +123,6 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
     @Override
     public void afterPropertiesSet() {
-
         IntStream.range(0, Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).forEach(a -> {
             TASK_ID_QUEUE_LIST.add(new LinkedBlockingQueue<>());
             TASK_ID_QUEUE_CONSUMER_POOL.submit(() -> {
@@ -128,12 +130,10 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                 for (; ; ) {
                     try {
                         String taskId = targetQueue.take();
-                        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from queue " + taskId);
                         processTaskIdFromNormalZset(taskId);
                     } catch (Exception e) {
                         LOGGER.error(e.getMessage(), e);
                     }
-
                 }
             });
         });

@@ -12,3 +12,52 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 
 ### Rough structure
 ![Rough structure](./assets/rdealy.png)
+
+
+### Usage
+
+#### sender
+```java
+public class SenderExample {
+    public static void main(String[] args) throws Exception {
+      //  while (true) {
+            Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
+
+            req4CreateStrContentTask.bizTag = "testBizTag";
+            // run after 10s
+            req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
+            req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+            req4CreateStrContentTask.content = "testContent";
+
+            Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
+
+            System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+
+          //  Thread.sleep(60000000);
+      //  }
+
+    }
+}
+```
+
+#### receiver
+```java
+// need to add scan the package "com.fenquen.rdelay.client.receiver",the server is listening 127.0.0.1:8080
+@SpringBootApplication(scanBasePackages = {"com.fenquen.rdealy.example.client.receiver", "com.fenquen.rdelay.client.receiver"})
+public class BootstrapClientReceiver {
+    public static void main(String[] args) {
+        SpringApplication.run(BootstrapClientReceiver.class, args);
+
+    }
+}
+```
+###### alternative Implements the Interface "StrContentTaskConsumer" to process StrContentTask
+```java
+@Component
+public class TaskConsumer implements StrContentTaskConsumer {
+    @Override
+    public void consumeTask(StrContentTask strContentTask) {
+        System.out.println(strContentTask.content);
+    }
+}
+```

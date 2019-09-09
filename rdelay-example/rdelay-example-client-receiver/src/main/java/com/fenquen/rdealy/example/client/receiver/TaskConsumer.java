@@ -6,12 +6,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TaskConsumer implements StrContentTaskConsumer {
-    {
-        System.out.println("aaaaaaaaaaaaa");
-    }
-
     @Override
-    public void consumeTask(StrContentTask strContentTask) throws Exception {
+    public void consumeTask(StrContentTask strContentTask) {
         System.out.println(strContentTask.content);
     }
 }

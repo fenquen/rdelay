@@ -25,6 +25,11 @@ public class TaskSender {
         return JSON.parseObject(HttpUtils.postStringContent(destUrl, JSON.toJSONString(req4CreateTask)), Resp4CreateTask.class);
     }
 
+    /**
+     * designate the rdelay server address where the task to be sent
+     *
+     * @param destSvrAddr rdelay server address
+     */
     public static void setDestSvrAddr(String destSvrAddr) {
         TaskSender.DEST_URL_PRE = TextUtils.verifyAndModifyHttpSvrAddr(destSvrAddr) + "/createTask/";
     }

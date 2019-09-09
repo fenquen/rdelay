@@ -20,6 +20,9 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 ```java
 public class SenderExample {
     public static void main(String[] args) throws Exception {
+        // designate the rdelay server address where the task to be sent
+        TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
+
       //  while (true) {
             Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
@@ -35,14 +38,13 @@ public class SenderExample {
 
           //  Thread.sleep(60000000);
       //  }
-
     }
 }
 ```
 
 #### receiver
 ```java
-// need to add scan the package "com.fenquen.rdelay.client.receiver",the server is listening 127.0.0.1:8080
+// add the package "com.fenquen.rdelay.client.receiver" to the scanning range,the server is listening 127.0.0.1:8080
 @SpringBootApplication(scanBasePackages = {"com.fenquen.rdealy.example.client.receiver", "com.fenquen.rdelay.client.receiver"})
 public class BootstrapClientReceiver {
     public static void main(String[] args) {

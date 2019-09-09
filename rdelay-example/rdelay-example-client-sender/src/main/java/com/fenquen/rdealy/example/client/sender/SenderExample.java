@@ -6,21 +6,23 @@ import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 
 public class SenderExample {
     public static void main(String[] args) throws Exception {
-      //  while (true) {
-            Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
+        // designate the rdelay server address where the task to be sent
+        TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
 
-            req4CreateStrContentTask.bizTag = "testBizTag";
-            // run after 10s
-            req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
-            req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
-            req4CreateStrContentTask.content = "testContent";
+        //  while (true) {
+        Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
-            Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
+        req4CreateStrContentTask.bizTag = "testBizTag";
+        // run after 10s
+        req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
+        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        req4CreateStrContentTask.content = "testContent";
 
-            System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+        Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
 
-          //  Thread.sleep(60000000);
-      //  }
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
+        //  Thread.sleep(60000000);
+        //  }
     }
 }

@@ -81,8 +81,7 @@ public class SenderExampleCron {
     }
 }
 ```
-rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task <br>
-the example to be present soon
+rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task,the example to be present soon
 #### task receiver (spring mvc) 
 alternatively implements the interface StrContentTaskConsumer to process StrContentTask
 ```java

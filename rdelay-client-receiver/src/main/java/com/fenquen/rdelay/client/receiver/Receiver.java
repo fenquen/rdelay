@@ -23,7 +23,7 @@ import java.util.Map;
 public class Receiver implements ApplicationContextAware {
     {
         System.out.println("init");
-       // SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+        // SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
     }
 
     private ApplicationContext applicationContext;
@@ -61,7 +61,41 @@ public class Receiver implements ApplicationContextAware {
             // params
             Object[] params = new Object[reflectionTask.params.length];
             for (int b = 0; params.length > b; b++) {
-                params[b] = JSON.parseObject(reflectionTask.params[b], paramTypes[b]);
+                String rawParam = reflectionTask.params[b];
+                Object param;
+
+                // need to know whether param is wrapper class
+                String paramTypeName = paramTypes[b].getName();
+                switch (paramTypeName) {
+                    case "java.lang.String":
+                        param = rawParam;
+                        break;
+                    case "java.lang.Character":
+                        param = rawParam.charAt(0);
+                        break;
+                    case "java.lang.Byte":
+                        param = Byte.valueOf(rawParam);
+                        break;
+                    case "java.lang.Short":
+                        param = Short.valueOf(rawParam);
+                        break;
+                    case "java.lang.Integer":
+                        param = Integer.valueOf(rawParam);
+                        break;
+                    case "java.lang.Long":
+                        param = Long.valueOf(rawParam);
+                        break;
+                    case "java.lang.Float":
+                        param = Float.valueOf(rawParam);
+                        break;
+                    case "java.lang.Double":
+                        param = Double.valueOf(rawParam);
+                        break;
+                    default:
+                        param = JSON.parseObject(rawParam, paramTypes[b]);
+                }
+
+                params[b] = param;
             }
 
             // targetClass

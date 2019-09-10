@@ -1,7 +1,7 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectTask;
+import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
@@ -38,7 +38,7 @@ public class Portal {
     }
 
     @RequestMapping(value = "/createTask/REFLECT", method = RequestMethod.POST)
-    public RespBase createReflectTask(@RequestBody Req4CreateReflectTask req4Create) {
+    public RespBase createReflectTask(@RequestBody Req4CreateReflectionTask req4Create) {
         return process(req4Create);
     }
 
@@ -139,7 +139,7 @@ public class Portal {
                 break;
             case REFLECT:
                 ReflectionTask reflectionTask = (ReflectionTask) abstractTask;
-                Req4CreateReflectTask req4CreateReflectTask = (Req4CreateReflectTask) req4Create;
+                Req4CreateReflectionTask req4CreateReflectTask = (Req4CreateReflectionTask) req4Create;
 
                 reflectionTask.className = req4CreateReflectTask.className;
                 reflectionTask.methodName = req4CreateReflectTask.methodName;

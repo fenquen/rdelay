@@ -16,7 +16,7 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 
 ### Usage
 
-#### sender 
+#### task sender 
 ```java
 public class SenderExample {
     public static void main(String[] args) throws Exception {
@@ -48,7 +48,7 @@ public class SenderExample {
     }
 }
 ```
-###### the task also supports cron expression besides executionTime which can be triggered periodically
+rdelay task also supports cron expression besides executionTime which can be triggered periodically
 ```java
 public class SenderExampleCron {
     public static void main(String[] args) throws Exception {
@@ -63,7 +63,7 @@ public class SenderExampleCron {
         req4CreateStrContentTask.enableCron = true;
         // when cron is enabled,"executionTime" will be ignored
         req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
-        // cron expression,executed per 2
+        // cron expression,executed per 2s
         req4CreateStrContentTask.cronExpression = "0/2 * * * * ? ";
 
         // the task where you want to be triggered
@@ -81,9 +81,10 @@ public class SenderExampleCron {
     }
 }
 ```
-
-#### receiver (spring mvc) 
-###### alternatively implements the Interface "StrContentTaskConsumer" to process StrContentTask
+rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task <br>
+the example to be present soon
+#### task receiver (spring mvc) 
+alternatively implements the interface StrContentTaskConsumer to process StrContentTask
 ```java
 @Component
 public class TaskConsumer implements StrContentTaskConsumer {

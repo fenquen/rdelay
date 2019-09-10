@@ -3,7 +3,7 @@ package com.fenquen.rdelay.model.req.create_task;
 import com.fenquen.rdelay.model.TaskType;
 import com.fenquen.rdelay.model.annotation.Nullable;
 
-public final class Req4CreateReflectTask extends Req4CreateTask {
+public final class Req4CreateReflectionTask extends Req4CreateTask {
     // below fields are meaningful only when taskType is REFLECT
     public String className;
 

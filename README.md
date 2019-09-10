@@ -14,9 +14,9 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 ![Rough structure](./assets/rdelay.png)
 
 
-### Usage (StrContentTask)
+### Usage
 
-#### sender
+#### sender 
 ```java
 public class SenderExample {
     public static void main(String[] args) throws Exception {
@@ -27,13 +27,20 @@ public class SenderExample {
             Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
             req4CreateStrContentTask.bizTag = "testBizTag";
-            // run after 10s
+            
+            // run after 2s
             req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
+            
+            // the task where you want to be triggered
             req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+            
+            // the message you want to deliver
             req4CreateStrContentTask.content = "testContent";
 
+            // send the request
             Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
 
+            // the request to creat the task is successful or not
             System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
           //  Thread.sleep(60000000);
@@ -41,19 +48,42 @@ public class SenderExample {
     }
 }
 ```
-
-#### receiver
+###### the task also supports cron expression besides executionTime which can be triggered periodically
 ```java
-// add the package "com.fenquen.rdelay.client.receiver" to the scanning range,the server is listening 127.0.0.1:8080
-@SpringBootApplication(scanBasePackages = {"com.fenquen.rdealy.example.client.receiver", "com.fenquen.rdelay.client.receiver"})
-public class BootstrapClientReceiver {
-    public static void main(String[] args) {
-        SpringApplication.run(BootstrapClientReceiver.class, args);
+public class SenderExampleCron {
+    public static void main(String[] args) throws Exception {
+        // designate the rdelay server address where the task to be sent
+        TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
+
+        Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
+
+        req4CreateStrContentTask.bizTag = "testBizTag";
+
+        // enable cron
+        req4CreateStrContentTask.enableCron = true;
+        // when cron is enabled,"executionTime" will be ignored
+        req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
+        // cron expression,executed per 2
+        req4CreateStrContentTask.cronExpression = "0/2 * * * * ? ";
+
+        // the task where you want to be triggered
+        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        
+        // the message you want to deliver
+        req4CreateStrContentTask.content = "testContent";
+
+        // send the request
+        Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
+
+        // the request to creat the task is successful or not
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
     }
 }
 ```
-###### alternative Implements the Interface "StrContentTaskConsumer" to process StrContentTask
+
+#### receiver (spring mvc) 
+###### alternatively implements the Interface "StrContentTaskConsumer" to process StrContentTask
 ```java
 @Component
 public class TaskConsumer implements StrContentTaskConsumer {

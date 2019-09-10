@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -20,6 +21,10 @@ import java.util.Map;
 
 @RestController
 public class Receiver implements ApplicationContextAware {
+    {
+        System.out.println("init");
+       // SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+    }
 
     private ApplicationContext applicationContext;
 

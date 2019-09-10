@@ -20,6 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,7 +74,9 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         Set<String> taskIds = redisOperator.getTaskIdsFromZset(Config.NORMAL_ZSET, 0, now);
         // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskId count " + taskIds.size());
-        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
+        if (taskIds.size() > 0) {
+            LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
+        }
         for (String taskId : taskIds) {
             dispatchTaskId2Queue(taskId);
         }
@@ -122,6 +125,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
             // need to know whether the task is cron or not
             if (task.enableCron) {
                 CronExpression cronExpression = TASK_ID_CRON_EXPRESSION.get(taskId);
+
                 if (null == cronExpression) {
                     // there is no possibility to throw exception because the expression is verified at Portal first
                     try {
@@ -130,14 +134,21 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                         // impossible
                         LOGGER.error(e.getMessage(), e);
                     }
-
-                    // calc the next execution time
-                    task.executionTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
-
-                    // remove taskId from TEMP_ZSET,update task,add taskId to NORMAL_ZSET with new executionTime
-                    redisOperator.refreshCronTask(task);
-
+                    TASK_ID_CRON_EXPRESSION.put(taskId, cronExpression);
                 }
+
+                // calc the next execution time
+                Date next = cronExpression.getNextValidTimeAfter(new Date());
+                task.executionTime = next.getTime();
+
+                // remove taskId from TEMP_ZSET,update task,add taskId to NORMAL_ZSET with new executionTime
+                try {
+                   // LOGGER.info("cron refresh " + taskId + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
+                    redisOperator.refreshCronTask(task);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+
             } else {
                 // not a cron task,it is throw away
                 redisOperator.delTaskCompletely(taskId);

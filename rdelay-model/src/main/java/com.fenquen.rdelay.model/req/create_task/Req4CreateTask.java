@@ -47,7 +47,7 @@ public abstract class Req4CreateTask {
             }
         }
 
-        TextUtils.verifyAndModifyHttpSvrAddr(executionAppSvrAddr);
+        executionAppSvrAddr = TextUtils.verifyAndModifyHttpSvrAddr(executionAppSvrAddr);
         taskReceiveUrl = executionAppSvrAddr + "/rdelay/receiveTask/" + getTaskType().name();
 
         // use cron or not
@@ -56,7 +56,7 @@ public abstract class Req4CreateTask {
                 throw new IllegalArgumentException("cronExpression is virtually empty when cron enabled");
             }
         } else {
-            if (System.currentTimeMillis() >= executionTime) {
+            if (null == executionTime || System.currentTimeMillis() >= executionTime) {
                 throw new RuntimeException("not a valid executionTime,System.currentTimeMillis() >= executionTime");
             }
 

@@ -4,10 +4,13 @@ local taskId = ARGV[1];
 local taskJsonStr = ARGV[2];
 local taskTTLMs = ARGV[3];
 local taskExecuteTime = ARGV[4];
-
 -- PSETEX fail
-if (not redis.call("PSETEX", taskId, taskTTLMs, taskJsonStr)) then
+redis.call('PSETEX', taskId, taskTTLMs, taskJsonStr);
+
+if (nil == redis.call('GET', taskId)) then
+    redis.log(redis.LOG_NOTICE, 'PSETEX failed when creation');
     return false;
 end;
 
-redis.call("ZADD", NORMAL_ZSET, taskExecuteTime, taskId)
+
+redis.call('ZADD', NORMAL_ZSET, taskExecuteTime, taskId)

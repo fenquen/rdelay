@@ -5,7 +5,7 @@ public class Config {
     public static final String TEMP_ZSET = "TEMP_ZSET";
     public static final String RETRY_ZSET = "RETRY_ZSET";
 
-    public static final long TASK_EXPIRE_MS = 0x7fffffffffffffffL;//24 * 3600 * 1000;
+    public static final long TASK_EXPIRE_MS = Integer.MAX_VALUE * 1000L;//
     public static final int ZSET_PROCESS_BATCH_SIZE = 20;
     public static final int RETRY_INTERVAL_SECOND = 10;
 

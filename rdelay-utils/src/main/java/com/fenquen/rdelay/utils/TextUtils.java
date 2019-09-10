@@ -14,6 +14,9 @@ public class TextUtils {
             throw new RuntimeException("httpSvrAddr pattern incorrect,should be like http(s)://host[[/]|[:port[/]]]");
         }
 
-        return httpSvrAddr.substring(0, httpSvrAddr.indexOf("/", httpSvrAddr.indexOf("//")));
+        if (!httpSvrAddr.endsWith("/")) {
+            httpSvrAddr += "/";
+        }
+        return httpSvrAddr.substring(0, httpSvrAddr.indexOf("/", httpSvrAddr.indexOf("//")+2));
     }
 }

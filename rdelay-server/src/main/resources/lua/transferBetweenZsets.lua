@@ -11,6 +11,6 @@ end;
 
 
 redis.call('ZADD', destZsetName, score, taskId);
-redis.call('ZREM', srcZsetName, taskId)
+redis.call('ZREM', srcZsetName, taskId);
 
 return true;

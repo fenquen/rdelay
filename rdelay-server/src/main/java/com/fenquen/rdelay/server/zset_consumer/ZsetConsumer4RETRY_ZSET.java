@@ -24,7 +24,7 @@ public class ZsetConsumer4RETRY_ZSET extends ZsetConsumerBase {
         // TASK_EXPIRE_MS
         long begin = now - Config.TASK_EXPIRE_MS;
 
-        Set<String> taskIds = redisOperator.getTaskIDsFromBucket(Config.RETRY_ZSET, begin, now);
+        Set<String> taskIds = redisOperator.getTaskIdsFromZset(Config.RETRY_ZSET, 0, now);
         for (String taskId : taskIds) {
             redisOperator.retry2Normal(taskId, System.currentTimeMillis());
         }

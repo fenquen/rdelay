@@ -33,7 +33,7 @@ public abstract class Req4CreateTask {
 
     private String taskReceiveUrl;
 
-
+    // used only in internal part,should not invoked by user
     public void verifyFields() throws Exception {
         Field[] fields = getClass().getFields();
         for (Field field : fields) {

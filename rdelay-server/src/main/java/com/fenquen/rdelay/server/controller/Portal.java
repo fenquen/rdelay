@@ -78,7 +78,7 @@ public class Portal {
     public RespBase delete(@RequestBody Req4DelTask req4DelTask) {
         RespBase respBase = new RespBase();
         try {
-            redisOperator.deleteTask(req4DelTask.taskId);
+            redisOperator.delTaskCompletely(req4DelTask.taskId);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -113,7 +113,8 @@ public class Portal {
         }
 
         // common part
-        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString();
+        // how to build a rich functionally id? taskType@uuid@cronExpression
+        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString()+"@";
         abstractTask.bizTag = req4Create.bizTag;
         abstractTask.enableCron = req4Create.enableCron;
         abstractTask.executionTime = req4Create.executionTime;
@@ -125,7 +126,9 @@ public class Portal {
 
         // verify the cron expression
         if (abstractTask.enableCron) {
-            
+            CronExpression cronExpression = new CronExpression(abstractTask.cronExpression);
+            abstractTask.executionTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
+            // save the binding mapping,temporary solution
         }
 
 

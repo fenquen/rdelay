@@ -9,6 +9,8 @@ import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.model.execution.ExecutionResp;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.HttpUtils;
+import com.fenquen.rdelay.utils.ThreadSafeWeakMap;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,9 +19,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.text.ParseException;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,96 +31,16 @@ import java.util.stream.IntStream;
 public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZsetConsumer4NORMAL_ZSET.class);
 
-    private static final List<LinkedBlockingQueue<String>> TASK_ID_QUEUE_LIST = new ArrayList<>(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT);
+    private static final List<LinkedBlockingQueue<String>> TASK_ID_QUEUE_LIST =
+            new ArrayList<>(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT);
 
-    private static final ExecutorService TASK_ID_QUEUE_CONSUMER_POOL = Executors.newFixedThreadPool(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT, runnable -> {
-        Thread thread = new Thread(runnable);
-        thread.setName("TASK_ID_QUEUE_PROCESS_" + thread.getId());
-        thread.setDaemon(true);
-        return thread;
-    });
-
-    @Autowired
-    private RedisOperator redisOperator;
-
-    @Scheduled(fixedDelay = NORMAL_ZSET_CONSUME_INTERVAL_MS)
-    @Override
-    public void consume() {
-        long now = System.currentTimeMillis();
-
-        // TASK_EXPIRE_MS
-        long begin = now - Config.TASK_EXPIRE_MS;
-
-        Set<String> taskIds = redisOperator.getTaskIDsFromBucket(Config.NORMAL_ZSET, begin, now);
-        // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskId count " + taskIds.size());
-        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
-        for (String taskId : taskIds) {
-            dispatchTaskId2Queue(taskId);
-        }
-    }
-
-    private void dispatchTaskId2Queue(String taskId) {
-        // the lua transfer script can tackle "if the same taskId is still in the corresponding queue"
-        TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
-    }
-
-    private void processTaskIdFromNormalZset(String taskId) {
-        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.
-        if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
-            return;
-        }
-
-        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
-
-        // not an elegant style to determine which sub class by a json string barely,need to be optimized
-        String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
-        TaskType taskType = TaskType.valueOf(taskTypeStr);
-
-        AbstractTask task = null;
-        switch (taskType) {
-            case REFLECT:
-                task = JSON.parseObject(taskJsonStr, ReflectionTask.class);
-                break;
-            case STR_CONTENT:
-                task = JSON.parseObject(taskJsonStr, StrContentTask.class);
-                break;
-        }
-
-        boolean successPostBack = true;
-        try {
-            LOGGER.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ZsetConsumer4NORMAL_ZSET postStringContent " + task.taskReceiveUrl);
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
-            LOGGER.info("ZsetConsumer4NORMAL_ZSET postStringContent " + timeUpRespJsonStr);
-            ExecutionResp timeUpResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
-            if (!timeUpResp.success) {
-                successPostBack = false;
-            }
-        } catch (Exception e) {
-            successPostBack = false;
-            LOGGER.error(e.getMessage(), e);
-        }
-
-        if (successPostBack) {
-            redisOperator.deleteTask(taskId);
-            return;
-        }
-
-        task.retriedCount++;
-
-        if (task.retriedCount > task.maxRetryCount) {
-            redisOperator.deleteTask(taskId);
-        }
-
-        redisOperator.updateTask(task);
-
-        int power = 1;
-        for (int a = 0; task.retriedCount - 1 > a; a++) {
-            power *= 2;
-        }
-
-        long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
-        redisOperator.temp2Retry(taskId, score);
-    }
+    private static final ExecutorService TASK_ID_QUEUE_CONSUMER_POOL =
+            Executors.newFixedThreadPool(Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT, runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setName("TASK_ID_QUEUE_PROCESS_" + thread.getId());
+                thread.setDaemon(true);
+                return thread;
+            });
 
     @Override
     public void afterPropertiesSet() {
@@ -138,5 +59,108 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
             });
         });
     }
+
+    @Autowired
+    private RedisOperator redisOperator;
+
+    @Scheduled(fixedDelay = NORMAL_ZSET_CONSUME_INTERVAL_MS)
+    @Override
+    public void consume() {
+        long now = System.currentTimeMillis();
+
+        // TASK_EXPIRE_MS
+        long begin = now - Config.TASK_EXPIRE_MS;
+
+        Set<String> taskIds = redisOperator.getTaskIdsFromZset(Config.NORMAL_ZSET, 0, now);
+        // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskId count " + taskIds.size());
+        LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
+        for (String taskId : taskIds) {
+            dispatchTaskId2Queue(taskId);
+        }
+    }
+
+    private void dispatchTaskId2Queue(String taskId) {
+        // the lua transfer script can tackle "if the same taskId is still in the corresponding queue"
+        TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
+    }
+
+    private void processTaskIdFromNormalZset(final String taskId) {
+        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.
+        if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
+            return;
+        }
+
+        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+
+        // not an elegant style to determine which sub class it actually is by a json string barely,need to be optimized
+        String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
+        TaskType taskType = TaskType.valueOf(taskTypeStr);
+
+        AbstractTask task = null;
+        switch (taskType) {
+            case REFLECT:
+                task = JSON.parseObject(taskJsonStr, ReflectionTask.class);
+                break;
+            case STR_CONTENT:
+                task = JSON.parseObject(taskJsonStr, StrContentTask.class);
+                break;
+        }
+
+        boolean successPostBack = true;
+        try {
+            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
+            ExecutionResp executionResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
+            if (!executionResp.success) {
+                successPostBack = false;
+            }
+        } catch (Exception e) {
+            successPostBack = false;
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        if (successPostBack) {
+            // need to know whether the task is cron or not
+            if (task.enableCron) {
+                CronExpression cronExpression = TASK_ID_CRON_EXPRESSION.get(taskId);
+                if (null == cronExpression) {
+                    // there is no possibility to throw exception because the expression is verified at Portal first
+                    try {
+                        cronExpression = new CronExpression(task.cronExpression);
+                    } catch (ParseException e) {
+                        // impossible
+                        LOGGER.error(e.getMessage(), e);
+                    }
+
+                    // calc the next execution time
+                    task.executionTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
+
+                    // remove taskId from TEMP_ZSET,update task,add taskId to NORMAL_ZSET with new executionTime
+                    redisOperator.refreshCronTask(task);
+
+                }
+            } else {
+                // not a cron task,it is throw away
+                redisOperator.delTaskCompletely(taskId);
+            }
+            return;
+        }
+
+        task.retriedCount++;
+        if (task.retriedCount > task.maxRetryCount) {
+            redisOperator.delTaskCompletely(taskId);
+        }
+
+        redisOperator.updateTask(task);
+
+        int power = 1;
+        for (int a = 0; task.retriedCount - 1 > a; a++) {
+            power *= 2;
+        }
+
+        long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
+        redisOperator.temp2Retry(taskId, score);
+    }
+
+    private static final ThreadSafeWeakMap<String, CronExpression> TASK_ID_CRON_EXPRESSION = new ThreadSafeWeakMap<>(100);
 }
 

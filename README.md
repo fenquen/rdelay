@@ -17,43 +17,34 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 ### Usage
 
 #### task sender 
-```java
-public class SenderExample {
-    public static void main(String[] args) throws Exception {
+``````
+public static void sendTask() throws Exception {
         // designate the rdelay server address where the task to be sent
         TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
 
-      //  while (true) {
-            Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
+        //  while (true) {
+        Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
-            req4CreateStrContentTask.bizTag = "testBizTag";
-            
-            // run after 2s
-            req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
-            
-            // the task where you want to be triggered
-            req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
-            
-            // the message you want to deliver
-            req4CreateStrContentTask.content = "testContent";
+        req4CreateStrContentTask.bizTag = "testBizTag";
+        // run after 2s
+        req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
+        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        req4CreateStrContentTask.content = "testContent";
 
-            // send the request
-            Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
+        Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
 
-            // the request to creat the task is successful or not
-            System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
-          //  Thread.sleep(60000000);
-      //  }
+        //  Thread.sleep(60000000);
+        //  }
     }
-}
-```
+``````
 rdelay task also supports cron expression besides executionTime which can be triggered periodically
-```java
-public class SenderExampleCron {
-    public static void main(String[] args) throws Exception {
+`````
+public static void sendCronTask() throws Exception {
         // designate the rdelay server address where the task to be sent
         TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
+
 
         Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
@@ -63,25 +54,48 @@ public class SenderExampleCron {
         req4CreateStrContentTask.enableCron = true;
         // when cron is enabled,"executionTime" will be ignored
         req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
-        // cron expression,executed per 2s
-        req4CreateStrContentTask.cronExpression = "0/2 * * * * ? ";
+        // cron expression,executed per 2h
+        req4CreateStrContentTask.cronExpression = "0/10 * * * * ? ";
 
-        // the task where you want to be triggered
         req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
-        
-        // the message you want to deliver
         req4CreateStrContentTask.content = "testContent";
 
-        // send the request
         Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateStrContentTask);
 
-        // the request to creat the task is successful or not
         System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
     }
-}
-```
-rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task,the example to be present soon
+``````
+rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task
+``````
+public static void sendReflectionTask() throws Exception {
+        // designate the rdelay server address where the task to be sent
+        TaskSender.setDestSvrAddr("http://127.0.0.1:8086");
+
+        Req4CreateReflectionTask req4CreateReflectionTask = new Req4CreateReflectionTask();
+
+        req4CreateReflectionTask.bizTag = "testBizTag";
+
+        // enable cron
+        req4CreateReflectionTask.enableCron = true;
+        // when cron is enabled,"executionTime" will be ignored
+        req4CreateReflectionTask.executionTime = System.currentTimeMillis() + 2000;
+        // cron expression,executed per 2h
+        req4CreateReflectionTask.cronExpression = "0/10 * * * * ? ";
+
+        req4CreateReflectionTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+
+        // necessary for reflection
+        req4CreateReflectionTask.className = "com.a.d";
+        req4CreateReflectionTask.methodName = "helloWorld";
+        req4CreateReflectionTask.paramTypeNames = new String[]{"java.lang.String"};
+        req4CreateReflectionTask.params = new String[]{"rdealy"};
+
+        Resp4CreateTask resp4CreateTask = TaskSender.sendTask(req4CreateReflectionTask);
+
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+    }
+``````
 #### task receiver (spring mvc) 
 alternatively implements the interface StrContentTaskConsumer to process StrContentTask
 ```java

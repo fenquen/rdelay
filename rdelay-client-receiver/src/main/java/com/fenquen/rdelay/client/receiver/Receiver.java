@@ -33,23 +33,23 @@ public class Receiver implements ApplicationContextAware {
 
     @RequestMapping(value = "/rdelay/receiveTask/STR_CONTENT", method = RequestMethod.POST)
     public ExecutionResp receiveStrContentTask(@RequestBody StrContentTask strContentTask) {
-        ExecutionResp timeUpResp = new ExecutionResp();
+        ExecutionResp executionResp = new ExecutionResp(strContentTask);
         try {
             if (strContentTaskConsumer != null) {
                 strContentTaskConsumer.consumeTask(strContentTask);
             }
-            timeUpResp.success();
+            executionResp.success();
         } catch (Exception e) {
             e.printStackTrace();
-            timeUpResp.fail(e);
+            executionResp.fail(e);
         }
 
-        return timeUpResp;
+        return executionResp;
     }
 
     @RequestMapping(value = "/rdelay/receiveTask/REFLECT", method = RequestMethod.POST)
     public ExecutionResp receiveReflectTask(@RequestBody ReflectionTask reflectionTask) {
-        ExecutionResp timeUpResp = new ExecutionResp();
+        ExecutionResp executionResp = new ExecutionResp(reflectionTask);
         try {
             // paramTypes
             Class[] paramTypes = new Class[reflectionTask.paramTypeNames.length];
@@ -118,8 +118,8 @@ public class Receiver implements ApplicationContextAware {
             // trig method when static
             if (Modifier.isStatic(targetMethod.getModifiers())) {
                 targetMethod.invoke(paramTypes, params);
-                timeUpResp.success();
-                return timeUpResp;
+                executionResp.success();
+                return executionResp;
             }
 
             // not static,get the instance
@@ -140,13 +140,13 @@ public class Receiver implements ApplicationContextAware {
             }
 
             targetMethod.invoke(targetObj, params);
-            timeUpResp.success();
+            executionResp.success();
         } catch (Exception e) {
             e.printStackTrace();
-            timeUpResp.fail(e);
+            executionResp.fail(e);
         }
 
-        return timeUpResp;
+        return executionResp;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

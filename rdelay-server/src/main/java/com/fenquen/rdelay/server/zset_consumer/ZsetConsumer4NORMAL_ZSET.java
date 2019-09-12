@@ -114,7 +114,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
        /* boolean successPostBack = true;
         try {
-            String executionRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
+            String executionRespJsonStr = HttpUtils.postStringContentSync(task.taskReceiveUrl, taskJsonStr);
             ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
             if (!executionResp.success) {
                 successPostBack = false;

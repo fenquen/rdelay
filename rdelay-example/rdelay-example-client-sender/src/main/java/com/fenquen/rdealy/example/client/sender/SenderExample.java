@@ -7,7 +7,7 @@ import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 
 public class SenderExample {
     public static void main(String[] args) throws Exception {
-
+        sendCronTask();
     }
 
     public static void sendTask() throws Exception {
@@ -55,6 +55,7 @@ public class SenderExample {
         System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
 
     }
+
     public static void sendReflectionTask() throws Exception {
         // designate the rdelay server address where the task to be sent
         TaskSender.setDestSvrAddr("http://127.0.0.1:8086");

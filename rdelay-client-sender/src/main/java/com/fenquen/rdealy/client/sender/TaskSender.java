@@ -22,7 +22,7 @@ public class TaskSender {
                 destUrl += DEST_URL_PRE + TaskType.STR_CONTENT.name();
         }
 
-        return JSON.parseObject(HttpUtils.postStringContent(destUrl, JSON.toJSONString(req4CreateTask)), Resp4CreateTask.class);
+        return JSON.parseObject(HttpUtils.postStringContentSync(destUrl, JSON.toJSONString(req4CreateTask)), Resp4CreateTask.class);
     }
 
     /**

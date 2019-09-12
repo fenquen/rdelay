@@ -22,6 +22,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class HttpUtils {
+    public static Boolean USE_ASYNC = false;
+
     private static final CloseableHttpClient HTTP_CLIENT_SYNC = HttpClientBuilder.create().build();
 
     private static CloseableHttpAsyncClient HTTP_CLIENT_ASYNC;
@@ -34,8 +36,7 @@ public class HttpUtils {
         }
     }
 
-
-    public static String postStringContent(String url, String stringContent) throws Exception {
+    public static String postStringContentSync(String url, String stringContent) throws Exception {
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
         httpPost.setEntity(new StringEntity(stringContent));
@@ -53,7 +54,7 @@ public class HttpUtils {
 
     public static Future<HttpResponse> postStringContentAsync(String url,
                                                               String stringContent,
-                                                              FutureCallback<HttpResponse> futureCallback)  {
+                                                              FutureCallback<HttpResponse> futureCallback) {
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
         try {
@@ -87,7 +88,12 @@ public class HttpUtils {
 
         CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.custom().
                 setConnectionManager(connManager)
-                .setDefaultRequestConfig(requestConfig)
+                .setDefaultRequestConfig(requestConfig).setThreadFactory(runnable -> {
+                    Thread thread = new Thread(runnable);
+                    thread.setDaemon(true);
+                    thread.setName("ASYNC_HTTP_THREAD_" + thread.getId());
+                    return thread;
+                })
                 .build();
 
         closeableHttpAsyncClient.start();

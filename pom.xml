@@ -15,6 +15,7 @@
         <module>rdelay-client-receiver</module>
         <module>rdelay-client-sender</module>
         <module>rdelay-example</module>
+        <module>rdelay-dashboard</module>
     </modules>
 
     <properties>
@@ -37,6 +38,12 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-mongodb</artifactId>
                 <version>${spring.boot.version}</version>
             </dependency>
 
@@ -78,9 +85,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-
-
 
 
     <build>

@@ -82,6 +82,7 @@ public class RedisOperator {
         stringRedisTemplate.opsForZSet().remove(zsetName, taskId);
     }
 
+    // this method's only usage now is to update retried num when execution fails
     public void updateTask(AbstractTask task) {
         stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSONString(task));
         // use lua script to combine them as an atomic one
@@ -109,7 +110,7 @@ public class RedisOperator {
         transferBetweenZsets(Config.RETRY_ZSET, Config.NORMAL_ZSET, taskId, score);
     }
 
-    public Boolean transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
+    private Boolean transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
         return stringRedisTemplate.execute(luaScript4TransferBetweenZsets, Arrays.asList(srcZsetName, destZsetName), taskId, score + "");
         // use lua script to combine them as an atomic one
         /* stringRedisTemplate.opsForZSet().add(destBucketName, taskId, score);

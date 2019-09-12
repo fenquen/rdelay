@@ -7,6 +7,7 @@ import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.model.execution.ExecutionResp;
+import com.fenquen.rdelay.server.http.FutureCallBack0;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.HttpUtils;
 import com.fenquen.rdelay.utils.ThreadSafeWeakMap;
@@ -109,10 +110,12 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                 break;
         }
 
-        boolean successPostBack = true;
+        HttpUtils.postStringContentAsync(task.taskReceiveUrl, taskJsonStr, new FutureCallBack0(task));
+
+       /* boolean successPostBack = true;
         try {
-            String timeUpRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
-            ExecutionResp executionResp = JSON.parseObject(timeUpRespJsonStr, ExecutionResp.class);
+            String executionRespJsonStr = HttpUtils.postStringContent(task.taskReceiveUrl, taskJsonStr);
+            ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
             if (!executionResp.success) {
                 successPostBack = false;
             }
@@ -156,11 +159,13 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
             return;
         }
 
+        // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
             redisOperator.delTaskCompletely(taskId);
         }
 
+        // update retried num
         redisOperator.updateTask(task);
 
         int power = 1;
@@ -169,9 +174,9 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         }
 
         long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
-        redisOperator.temp2Retry(taskId, score);
+        redisOperator.temp2Retry(taskId, score);*/
     }
 
-    private static final ThreadSafeWeakMap<String, CronExpression> TASK_ID_CRON_EXPRESSION = new ThreadSafeWeakMap<>(100);
+    public static final ThreadSafeWeakMap<String, CronExpression> TASK_ID_CRON_EXPRESSION = new ThreadSafeWeakMap<>(100);
 }
 

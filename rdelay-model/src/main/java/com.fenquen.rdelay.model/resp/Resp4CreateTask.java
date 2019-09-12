@@ -23,4 +23,9 @@ public class Resp4CreateTask extends RespBase {
     protected void failInternal(Throwable throwable) {
 
     }
+
+    @Override
+    public ModelType getModel() {
+        return null;
+    }
 }

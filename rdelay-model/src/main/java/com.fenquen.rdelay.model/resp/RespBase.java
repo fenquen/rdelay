@@ -1,6 +1,8 @@
 package com.fenquen.rdelay.model.resp;
 
-public class RespBase {
+import com.fenquen.rdelay.model.ModelBase;
+
+public class RespBase extends ModelBase {
     public Boolean success;
 
     public String errMsg;
@@ -18,11 +20,16 @@ public class RespBase {
         return this;
     }
 
-    protected void successInternal() {
+    void successInternal() {
 
     }
 
-    protected void failInternal(Throwable throwable) {
+    void failInternal(Throwable throwable) {
 
+    }
+
+    @Override
+    public ModelType getModel() {
+        return null;
     }
 }

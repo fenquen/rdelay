@@ -19,3 +19,4 @@ rdelay-client-receiver/rdelay-client-receiver.iml
 rdelay-client-sender/rdelay-client-sender.iml
 rdelay-example/rdelay-example.iml
 rdelay-dashboard/rdelay-dashboard.iml
+rdelay-dashboard/target/

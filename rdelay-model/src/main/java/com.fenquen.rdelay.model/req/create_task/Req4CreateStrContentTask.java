@@ -1,6 +1,6 @@
 package com.fenquen.rdelay.model.req.create_task;
 
-import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.task.TaskType;
 
 public class Req4CreateStrContentTask extends Req4CreateTask {
     // meaningful only when taskType is STR_CONTENT

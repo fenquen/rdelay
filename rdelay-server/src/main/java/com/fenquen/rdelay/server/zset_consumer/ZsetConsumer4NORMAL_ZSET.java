@@ -1,12 +1,11 @@
 package com.fenquen.rdelay.server.zset_consumer;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.model.task.AbstractTask;
-import com.fenquen.rdelay.model.execution.ExecutionResp;
 import com.fenquen.rdelay.server.http.FutureCallBack0;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.HttpUtils;
@@ -20,8 +19,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -1,6 +1,6 @@
 package com.fenquen.rdelay.model.req.create_task;
 
-import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.annotation.Nullable;
 import com.fenquen.rdelay.utils.TextUtils;
 

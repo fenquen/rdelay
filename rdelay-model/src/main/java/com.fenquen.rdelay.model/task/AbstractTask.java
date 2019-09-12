@@ -1,13 +1,13 @@
 package com.fenquen.rdelay.model.task;
 
-import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.ModelBase;
 
 /**
  * a model describing timing task
  */
-public abstract class AbstractTask {
+public abstract class AbstractTask extends ModelBase {
     /**
-     * unique tag to be distinguished
+     * unique tag to be distinguished by
      */
     public String id;
 
@@ -37,6 +37,11 @@ public abstract class AbstractTask {
 
     public final String getMyClazzName() {
         return getClass().getName();
+    }
+
+    @Override
+    public ModelType getModel() {
+        return ModelType.TASK;
     }
 }
 

@@ -1,7 +1,7 @@
 package com.fenquen.rdelay.client.receiver;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.execution.ExecutionResp;
+import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import org.springframework.beans.BeansException;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

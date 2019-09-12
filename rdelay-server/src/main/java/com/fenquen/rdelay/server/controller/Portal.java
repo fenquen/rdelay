@@ -17,6 +17,8 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,16 @@ import java.util.UUID;
 @RestController
 public class Portal {
     private static final Logger LOGGER = LoggerFactory.getLogger(Portal.class);
+
+    @Value("${rdelay.dashboard.topic.name}")
+    private String destTopicName;
+
+    @Value("${rdelay.dashboard.enabled}")
+    private Boolean dashBoardEnabled;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
     private RedisOperator redisOperator;
@@ -46,7 +58,14 @@ public class Portal {
         Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
             AbstractTask task = parseReq4Create(req4CreateTask);
+
+            // redis
             redisOperator.createTask(task);
+
+            // send newly built task
+            if (dashBoardEnabled) {
+                kafkaTemplate.send(destTopicName, task.getModel().name(), JSON.toJSONString(task));
+            }
 
             resp4CreateTask.id = task.id;
             resp4CreateTask.success();
@@ -114,7 +133,7 @@ public class Portal {
 
         // common part
         // how to build a rich functionally id? taskType@uuid@cronExpression
-        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString()+"@";
+        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString() + "@";
         abstractTask.bizTag = req4Create.bizTag;
         abstractTask.enableCron = req4Create.enableCron;
         abstractTask.executionTime = req4Create.executionTime;

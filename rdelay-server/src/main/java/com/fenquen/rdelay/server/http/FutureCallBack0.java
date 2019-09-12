@@ -1,7 +1,8 @@
 package com.fenquen.rdelay.server.http;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.execution.ExecutionResp;
+import com.fenquen.rdelay.model.ModelBase;
+import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.task.AbstractTask;
 import com.fenquen.rdelay.server.utils.SpringUtils;
 import com.fenquen.rdelay.server.config.Config;
@@ -13,14 +14,37 @@ import org.apache.http.util.EntityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.kafka.core.KafkaTemplate;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
 public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureCallBack0.class);
-    private RedisOperator redisOperator = SpringUtils.applicationContext.getBean(RedisOperator.class);
+
+    private RedisOperator redisOperator = SpringUtils.getBean(RedisOperator.class);
     private AbstractTask task;
+
+    private static String destTopicName = "rdealy-dashboard";
+
+    private static Boolean dashBoardEnabled = false;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    static {
+        PropertiesFactoryBean propertiesFactoryBean = SpringUtils.getBean(PropertiesFactoryBean.class);
+        try {
+            destTopicName = propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.id");
+            dashBoardEnabled = Boolean.valueOf(propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.region"));
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
 
     public FutureCallBack0(AbstractTask abstractTask) {
         this.task = abstractTask;
@@ -29,26 +53,40 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     @Override
     public void completed(HttpResponse httpResponse) {
         try {
-            String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity());
+            String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
+            sendKafka(executionResp.getModel(), executionRespJsonStr);
             if (executionResp.success) {
                 successProcess();
             } else {
                 failProcess();
             }
         } catch (Exception e) {
-            failed(e);
+            failProcess();
         }
     }
 
     @Override
-    public void failed(Exception ex) {
+    public void failed(Exception e) {
+        // need to build a execution resp manually
+        ExecutionResp executionResp = new ExecutionResp();
+        executionResp.taskId = task.id;
+        executionResp.fail(e);
+
+        sendKafka(executionResp.getModel(), JSON.toJSONString(executionResp));
+
         failProcess();
     }
 
     @Override
     public void cancelled() {
 
+    }
+
+    private void sendKafka(ModelBase.ModelType modelType, String jsonStr) {
+        if (dashBoardEnabled) {
+            kafkaTemplate.send(destTopicName, modelType.name(), jsonStr);
+        }
     }
 
     private void successProcess() {

@@ -1,7 +1,7 @@
 package com.fenquen.rdealy.client.sender;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.TaskType;
+import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.utils.HttpUtils;

@@ -5,7 +5,7 @@ import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.config.Config;
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.http.FutureCallBack0;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.utils.HttpUtils;
@@ -97,7 +97,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
         TaskType taskType = TaskType.valueOf(taskTypeStr);
 
-        AbstractTask task = null;
+        TaskBase task = null;
         switch (taskType) {
             case REFLECT:
                 task = JSON.parseObject(taskJsonStr, ReflectionTask.class);

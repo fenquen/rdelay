@@ -1,9 +1,9 @@
 package com.fenquen.rdelay.model.resp;
 
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 
 public class Resp4Query extends RespBase {
-    public AbstractTask task;
+    public TaskBase task;
 
     @Override
     public DbMetaData getDbMetaData() {

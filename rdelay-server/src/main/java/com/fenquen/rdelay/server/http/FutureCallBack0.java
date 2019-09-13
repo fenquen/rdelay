@@ -3,7 +3,7 @@ package com.fenquen.rdelay.server.http;
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.ModelBase;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.utils.SpringUtils;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.server.redis.RedisOperator;
@@ -26,7 +26,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureCallBack0.class);
 
     private RedisOperator redisOperator = SpringUtils.getBean(RedisOperator.class);
-    private AbstractTask task;
+    private TaskBase task;
 
     private static String destTopicName = "rdealy-dashboard";
 
@@ -46,7 +46,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
     }
 
-    public FutureCallBack0(AbstractTask abstractTask) {
+    public FutureCallBack0(TaskBase abstractTask) {
         this.task = abstractTask;
     }
 

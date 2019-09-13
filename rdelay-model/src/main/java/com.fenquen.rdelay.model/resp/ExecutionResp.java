@@ -1,11 +1,11 @@
 package com.fenquen.rdelay.model.resp;
 
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 
 public class ExecutionResp extends RespBase {
     public String taskId;
 
-    public ExecutionResp(AbstractTask abstractTask) {
+    public ExecutionResp(TaskBase abstractTask) {
         taskId = abstractTask.id;
     }
 

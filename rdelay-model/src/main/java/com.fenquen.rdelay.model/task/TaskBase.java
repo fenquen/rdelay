@@ -5,7 +5,7 @@ import com.fenquen.rdelay.model.ModelBase;
 /**
  * a model describing timing task
  */
-public abstract class AbstractTask extends ModelBase {
+public  class TaskBase extends ModelBase {
     /**
      * unique tag to be distinguished by
      */
@@ -39,10 +39,10 @@ public abstract class AbstractTask extends ModelBase {
         return getClass().getName();
     }
 
-   /* @Override
+    @Override
     public DbMetaData getDbMetaData() {
         return DbMetaData.TASK;
-    }*/
+    }
 }
 
 

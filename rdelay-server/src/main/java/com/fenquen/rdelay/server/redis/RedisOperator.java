@@ -2,7 +2,7 @@ package com.fenquen.rdelay.server.redis;
 
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.server.config.Config;
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -11,7 +11,6 @@ import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
@@ -56,7 +55,7 @@ public class RedisOperator {
 
     }
 
-    public void createTask(AbstractTask task) {
+    public void createTask(TaskBase task) {
         stringRedisTemplate.execute(luaScript4CreateTask,
                 Collections.singletonList(Config.NORMAL_ZSET),
                 task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS + "", task.executionTime + "");
@@ -83,7 +82,7 @@ public class RedisOperator {
     }
 
     // this method's only usage now is to update retried num when execution fails
-    public void updateTask(AbstractTask task) {
+    public void updateTask(TaskBase task) {
         stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSONString(task));
         // use lua script to combine them as an atomic one
        /* long ttlMs = stringRedisTemplate.getExpire(task.taskId, TimeUnit.MILLISECONDS);
@@ -117,7 +116,7 @@ public class RedisOperator {
            stringRedisTemplate.opsForZSet().remove(srcBuckName, taskId);*/
     }
 
-    public void refreshCronTask(AbstractTask task) {
+    public void refreshCronTask(TaskBase task) {
         stringRedisTemplate.execute(luaScript4RefreshCronTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET),
                 task.id, task.executionTime + "", JSON.toJSONString(task));

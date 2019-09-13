@@ -3,7 +3,7 @@ package com.fenquen.rdelay.server.controller;
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
-import com.fenquen.rdelay.model.task.AbstractTask;
+import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
 import com.fenquen.rdelay.model.req.Req4DelTask;
 import com.fenquen.rdelay.model.req.Req4QueryTask;
@@ -28,8 +28,8 @@ import java.util.Date;
 import java.util.UUID;
 
 @RestController
-public class Portal {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Portal.class);
+public class ServerPortal {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerPortal.class);
 
     @Value("${rdelay.dashboard.topic.name}")
     private String destTopicName;
@@ -46,7 +46,18 @@ public class Portal {
 
     @RequestMapping("/testKafka")
     public String testKafka() {
-        kafkaTemplate.send(destTopicName, "rdelay-server", "rdelayserver");
+        kafkaTemplate.send(destTopicName, "TASK", "{\n" +
+                "    \"bizTag\": \"testBizTag\",\n" +
+                "    \"content\": \"testContent\",\n" +
+                "    \"createTime\": 1568011210377,\n" +
+                "    \"executionTime\": 1568011211833,\n" +
+                "    \"id\": \"STR_CONTENT@8d7f949b-5874-4097-bdea-c1dd73c8d296\",\n" +
+                "    \"maxRetryCount\": 3,\n" +
+                "    \"myClazzName\": \"com.fenquen.rdelay.model.task.StrContentTask\",\n" +
+                "    \"retriedCount\": 1,\n" +
+                "    \"taskReceiveUrl\": \"http://127.0.0.1:8080/rdelay/receiveTask/STR_CONTENT\",\n" +
+                "    \"taskType\": \"STR_CONTENT\"\n" +
+                "}");
         return "{\"success\":true}";
     }
 
@@ -63,14 +74,14 @@ public class Portal {
     private RespBase process(Req4CreateTask req4CreateTask) {
         Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
-            AbstractTask task = parseReq4Create(req4CreateTask);
+            TaskBase task = parseReq4Create(req4CreateTask);
 
             // redis
             redisOperator.createTask(task);
 
             // send newly built task
             if (dashBoardEnabled) {
-                kafkaTemplate.send(destTopicName, task.getModel().name(), JSON.toJSONString(task));
+                kafkaTemplate.send(destTopicName, task.getDbMetaData().name(), JSON.toJSONString(task));
             }
 
             resp4CreateTask.id = task.id;
@@ -89,7 +100,7 @@ public class Portal {
         try {
             String taskJsonStr = redisOperator.getTaskJsonStr(req4QueryTask.taskId);
             if (StringUtils.hasText(taskJsonStr)) {
-                resp4Query.task = JSON.parseObject(taskJsonStr, AbstractTask.class);
+                resp4Query.task = JSON.parseObject(taskJsonStr, TaskBase.class);
             }
             resp4Query.success();
         } catch (Exception e) {
@@ -123,8 +134,8 @@ public class Portal {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private AbstractTask parseReq4Create(Req4CreateTask req4Create) throws Exception {
-        AbstractTask abstractTask;
+    private TaskBase parseReq4Create(Req4CreateTask req4Create) throws Exception {
+        TaskBase abstractTask;
 
         switch (req4Create.getTaskType()) {
             case STR_CONTENT:

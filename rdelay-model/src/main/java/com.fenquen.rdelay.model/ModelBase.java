@@ -4,7 +4,7 @@ public abstract class ModelBase {
     public abstract DbMetaData getDbMetaData();
 
     public enum DbMetaData {
-        TASK("task"), EXECUTION_RESP("execution_resp");
+        TASK("TASK"), EXECUTION_RESP("EXECUTION_RESP");
 
         public String tableName;
 

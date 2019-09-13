@@ -42,7 +42,12 @@ public class Consumer {
 
         JSONObject jsonObject = JSON.parseObject(message);
 
-        mongoTemplate.insert(jsonObject, dbMetaData.tableName);
+        try {
+            mongoTemplate.insert(jsonObject, dbMetaData.tableName);
+        } catch (Exception e) {
+            LOGGER.error("save mongodb ", e);
+        }
+
 
         switch (dbMetaData) {
             case TASK:

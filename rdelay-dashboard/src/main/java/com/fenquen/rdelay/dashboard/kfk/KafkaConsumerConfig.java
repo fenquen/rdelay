@@ -43,15 +43,7 @@ public class KafkaConsumerConfig {
                                                                                        ConsumerFactory<Object, Object> kafkaConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
-        factory.setErrorHandler(new ErrorHandler() {
-            @Override
-            public void handle(Exception thrownException, ConsumerRecord<?, ?> data) {
-
-                System.out.println(thrownException.getMessage());
-                System.out.println(data.key().getClass());
-                System.out.println(data.value().getClass());
-            }
-        });
+        factory.setErrorHandler(new MyErrorHandler());
         return factory;
     }
 }

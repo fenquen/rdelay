@@ -29,7 +29,7 @@ public class RespBase extends ModelBase {
     }
 
     @Override
-    public ModelType getModel() {
+    public DbMetaData getDbMetaData() {
         return null;
     }
 }

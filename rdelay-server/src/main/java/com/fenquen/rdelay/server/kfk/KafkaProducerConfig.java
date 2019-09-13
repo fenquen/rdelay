@@ -8,7 +8,7 @@ import org.springframework.kafka.support.LoggingProducerListener;
 import org.springframework.kafka.support.ProducerListener;
 
 @org.springframework.context.annotation.Configuration
-public class Configuration {
+public class KafkaProducerConfig {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Bean
     public KafkaTemplate<?, ?> kafkaTemplate(

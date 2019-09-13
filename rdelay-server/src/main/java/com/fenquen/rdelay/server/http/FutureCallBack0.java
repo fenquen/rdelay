@@ -55,7 +55,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         try {
             String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
-            sendKafka(executionResp.getModel(), executionRespJsonStr);
+            sendKafka(executionResp.getDbMetaData(), executionRespJsonStr);
             if (executionResp.success) {
                 successProcess();
             } else {
@@ -73,7 +73,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         executionResp.taskId = task.id;
         executionResp.fail(e);
 
-        sendKafka(executionResp.getModel(), JSON.toJSONString(executionResp));
+        sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
 
         failProcess();
     }
@@ -83,7 +83,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
     }
 
-    private void sendKafka(ModelBase.ModelType modelType, String jsonStr) {
+    private void sendKafka(ModelBase.DbMetaData modelType, String jsonStr) {
         if (dashBoardEnabled) {
             kafkaTemplate.send(destTopicName, modelType.name(), jsonStr);
         }

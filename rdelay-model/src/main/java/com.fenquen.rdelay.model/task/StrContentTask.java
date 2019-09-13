@@ -7,4 +7,8 @@ public final class StrContentTask extends AbstractTask {
      */
     public String content;
 
+    @Override
+    public DbMetaData getDbMetaData() {
+        return DbMetaData.TASK;
+    }
 }

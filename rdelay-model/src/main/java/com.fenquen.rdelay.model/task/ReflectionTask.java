@@ -13,4 +13,8 @@ public final class ReflectionTask extends AbstractTask {
 
     public String[] params;
 
+    @Override
+    public DbMetaData getDbMetaData() {
+        return DbMetaData.TASK;
+    }
 }

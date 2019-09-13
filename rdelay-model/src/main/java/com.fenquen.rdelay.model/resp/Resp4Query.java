@@ -6,7 +6,7 @@ public class Resp4Query extends RespBase {
     public AbstractTask task;
 
     @Override
-    public ModelType getModel() {
+    public DbMetaData getDbMetaData() {
         return null;
     }
 }

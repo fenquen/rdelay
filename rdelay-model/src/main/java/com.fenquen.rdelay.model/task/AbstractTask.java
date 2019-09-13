@@ -39,10 +39,10 @@ public abstract class AbstractTask extends ModelBase {
         return getClass().getName();
     }
 
-    @Override
-    public ModelType getModel() {
-        return ModelType.TASK;
-    }
+   /* @Override
+    public DbMetaData getDbMetaData() {
+        return DbMetaData.TASK;
+    }*/
 }
 
 

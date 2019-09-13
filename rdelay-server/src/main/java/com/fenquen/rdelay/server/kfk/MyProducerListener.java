@@ -14,11 +14,11 @@ public class MyProducerListener implements ProducerListener<Object, Object> {
 
     @Override
     public void onSuccess(String topic, Integer partition, Object key, Object value, RecordMetadata recordMetadata) {
-        LOGGER.info("key {},value {}", key, value);
+
     }
 
     @Override
     public void onError(String topic, Integer partition, Object key, Object value, Exception exception) {
-
+        LOGGER.info("key {},value {}", key, value);
     }
 }

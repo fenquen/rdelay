@@ -44,6 +44,12 @@ public class Portal {
     @Autowired
     private RedisOperator redisOperator;
 
+    @RequestMapping("/testKafka")
+    public String testKafka() {
+        kafkaTemplate.send(destTopicName, "rdelay-server", "rdelayserver");
+        return "{\"success\":true}";
+    }
+
     @RequestMapping(value = "/createTask/STR_CONTENT", method = RequestMethod.POST)
     public RespBase createStrContentTask(@RequestBody Req4CreateStrContentTask req4Create) {
         return process(req4Create);

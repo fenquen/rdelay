@@ -20,3 +20,4 @@ rdelay-client-sender/rdelay-client-sender.iml
 rdelay-example/rdelay-example.iml
 rdelay-dashboard/rdelay-dashboard.iml
 rdelay-dashboard/target/
+rdelay-dashboard/src/test/

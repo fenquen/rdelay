@@ -39,4 +39,9 @@ public final class Req4CreateReflectionTask extends Req4CreateTask {
     }
 
     public static final String URL = TaskType.REFLECT.name();
+
+    @Override
+    public String getRequestUri() {
+        return "/createTask/" + getTaskType().name();
+    }
 }

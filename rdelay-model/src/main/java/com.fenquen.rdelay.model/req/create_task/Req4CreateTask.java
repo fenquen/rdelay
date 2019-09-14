@@ -1,5 +1,6 @@
 package com.fenquen.rdelay.model.req.create_task;
 
+import com.fenquen.rdelay.model.req.ReqBase;
 import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.annotation.Nullable;
 import com.fenquen.rdelay.utils.TextUtils;
@@ -9,7 +10,7 @@ import java.lang.reflect.Field;
 /**
  * request for create a task
  */
-public abstract class Req4CreateTask {
+public abstract class Req4CreateTask extends ReqBase {
     public String name;
 
 

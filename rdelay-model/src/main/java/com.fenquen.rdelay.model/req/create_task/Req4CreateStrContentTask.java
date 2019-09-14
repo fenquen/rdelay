@@ -19,4 +19,9 @@ public class Req4CreateStrContentTask extends Req4CreateTask {
     }
 
     public static final String URL = TaskType.STR_CONTENT.name();
+
+    @Override
+    public String getRequestUri() {
+        return "/createTask/" + getTaskType().name();
+    }
 }

@@ -1,13 +1,13 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.req.Req4PauseTask;
-import com.fenquen.rdelay.model.req.Req4ResumeTask;
+import com.fenquen.rdelay.model.req.modify_task.Req4PauseTask;
+import com.fenquen.rdelay.model.req.modify_task.Req4ResumeTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
-import com.fenquen.rdelay.model.req.Req4AbortTaskManually;
+import com.fenquen.rdelay.model.req.modify_task.Req4AbortTaskManually;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;

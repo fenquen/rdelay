@@ -106,10 +106,10 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         TaskBase task = null;
         switch (taskType) {
             case REFLECT:
-                task = JSON.parseObject(taskJsonStr, ReflectionTask.class);
+                task = JSON.parseObject(taskJsonStr, taskType.clazz);
                 break;
             case STR_CONTENT:
-                task = JSON.parseObject(taskJsonStr, StrContentTask.class);
+                task = JSON.parseObject(taskJsonStr, taskType.clazz);
                 break;
         }
 

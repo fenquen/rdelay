@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>rdelay-dashboard</title>
+    <link rel="stylesheet" type="text/css" href="/themes/material/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/themes/icon.css">
+
+</head>
+<body class="easyui-layout">
+<div data-options="region:'north',border:false" style="height:60px;background:#B3DFDA;padding:10px">
+    <span style="font-weight: 100">rdelay-dashboard</span>
+    <a href="https://github.com/fenquen/">https://github.com/fenquen/</a>
+</div>
+<div data-options="region:'west',split:false,title:''" style="width:300px;padding:10px;">
+
+    <ul class="easyui-tree" id="menu-tree">
+    </ul>
+
+</div>
+<!--<div data-options="region:'south',border:false" style="height:50px;background:#A9FACD;padding:10px;">south region</div>-->
+<div data-options="region:'center',title:'',split:false,border:false">
+    <div id="tt" class="easyui-tabs" data-options="border:false"
+         style="width: 100%;height: 100%">
+        <div title="welcome" style="padding: 10px" data-options="closable:true">
+            <p>rdelay</p>
+            a redis-based lightweight distributable timing framework powered by spring boot as personal experimental
+            work
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery.easyui.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+
+        var menuTreeData = [{
+            "text": "rdelay-tasks",
+            "url": "https://cn.bing.com"
+        }];
+        $("#menu-tree").tree("loadData", menuTreeData);
+
+        $("#menu-tree").tree({
+            "onClick": function (node) {
+                if ($('#tt').tabs('getTab', node.text)) {
+                    return;
+                }
+
+                $('#tt').tabs('add', {
+                    title: node.text,
+                    content: '<iframe frameborder="0"  src="' + node.url + '" style="height: 100%;width: 100%"></iframe>',
+                    closable: true
+                });
+            }
+        });
+    });
+</script>

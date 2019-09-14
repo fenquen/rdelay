@@ -6,9 +6,7 @@ import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
 import com.fenquen.rdelay.model.req.Req4DelTask;
-import com.fenquen.rdelay.model.req.Req4QueryTask;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
-import com.fenquen.rdelay.model.resp.Resp4Query;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
@@ -19,11 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.UUID;
 
@@ -51,7 +46,7 @@ public class ServerPortal {
                 "    \"content\": \"testContent\",\n" +
                 "    \"createTime\": 1568011210377,\n" +
                 "    \"executionTime\": 1568011211833,\n" +
-                "    \"id\": \"STR_CONTENT@8d7f949b-5874-4097-bdea-c1dd73c8d296\",\n" +
+                "    \"taskid\": \"STR_CONTENT@" + UUID.randomUUID() + "\n" +
                 "    \"maxRetryCount\": 3,\n" +
                 "    \"myClazzName\": \"com.fenquen.rdelay.model.task.StrContentTask\",\n" +
                 "    \"retriedCount\": 1,\n" +
@@ -71,45 +66,6 @@ public class ServerPortal {
         return process(req4Create);
     }
 
-    private RespBase process(Req4CreateTask req4CreateTask) {
-        Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
-        try {
-            TaskBase task = parseReq4Create(req4CreateTask);
-
-            // redis
-            redisOperator.createTask(task);
-
-            // send newly built task
-            if (dashBoardEnabled) {
-                kafkaTemplate.send(destTopicName, task.getDbMetaData().name(), JSON.toJSONString(task));
-            }
-
-            resp4CreateTask.id = task.id;
-            resp4CreateTask.success();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            resp4CreateTask.fail(e);
-        }
-
-        return resp4CreateTask;
-    }
-
-    // @RequestMapping("/queryTask")
-    public RespBase query(@RequestBody Req4QueryTask req4QueryTask) {
-        Resp4Query resp4Query = new Resp4Query();
-        try {
-            String taskJsonStr = redisOperator.getTaskJsonStr(req4QueryTask.taskId);
-            if (StringUtils.hasText(taskJsonStr)) {
-                resp4Query.task = JSON.parseObject(taskJsonStr, TaskBase.class);
-            }
-            resp4Query.success();
-        } catch (Exception e) {
-            resp4Query.fail(e);
-        }
-
-        return resp4Query;
-    }
-
     @RequestMapping("/deleteTask")
     public RespBase delete(@RequestBody Req4DelTask req4DelTask) {
         RespBase respBase = new RespBase();
@@ -123,14 +79,27 @@ public class ServerPortal {
     }
 
 
-    private <T> T parseHttpReq(HttpServletRequest httpReq, Class<T> type) throws Exception {
-        ServletInputStream servletInputStream = httpReq.getInputStream();
-        byte[] reqBody = new byte[servletInputStream.available()];
-        servletInputStream.read(reqBody);
+    private RespBase process(Req4CreateTask req4CreateTask) {
+        Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
+        try {
+            TaskBase task = parseReq4Create(req4CreateTask);
 
-        String jsonStr = new String(reqBody);
+            // redis
+            redisOperator.createTask(task);
 
-        return JSON.parseObject(jsonStr, type);
+            // send newly built task
+            if (dashBoardEnabled) {
+                kafkaTemplate.send(destTopicName, task.getDbMetaData().name(), JSON.toJSONString(task));
+            }
+
+            resp4CreateTask.id = task.taskid;
+            resp4CreateTask.success();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            resp4CreateTask.fail(e);
+        }
+
+        return resp4CreateTask;
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -149,8 +118,8 @@ public class ServerPortal {
         }
 
         // common part
-        // how to build a rich functionally id? taskType@uuid@cronExpression
-        abstractTask.id = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString() + "@";
+        // how to build a rich functionally taskid? taskType@uuid@cronExpression
+        abstractTask.taskid = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString() + "@";
         abstractTask.bizTag = req4Create.bizTag;
         abstractTask.enableCron = req4Create.enableCron;
         abstractTask.executionTime = req4Create.executionTime;

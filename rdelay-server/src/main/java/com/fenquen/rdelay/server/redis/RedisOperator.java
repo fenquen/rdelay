@@ -58,10 +58,10 @@ public class RedisOperator {
     public void createTask(TaskBase task) {
         stringRedisTemplate.execute(luaScript4CreateTask,
                 Collections.singletonList(Config.NORMAL_ZSET),
-                task.id, JSON.toJSONString(task), Config.TASK_EXPIRE_MS + "", task.executionTime + "");
+                task.taskid, JSON.toJSONString(task), Config.TASK_EXPIRE_MS + "", task.executionTime + "");
         // use lua script to combine them as an atomic one
-        /*stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
-        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskId, task.executionTime);*/
+        /*stringRedisTemplate.opsForValue().set(task.taskid, JSON.toJSONString(task), Config.TASK_EXPIRE_MS, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForZSet().add(Config.NORMAL_ZSET, task.taskid, task.executionTime);*/
     }
 
     public String getTaskJsonStr(String id) {
@@ -71,10 +71,10 @@ public class RedisOperator {
     public void delTaskCompletely(String taskId) {
         stringRedisTemplate.execute(luaScript4DeleteTaskCompletely, Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET), taskId);
         // use lua script to combine them as an atomic one
-        /* stringRedisTemplate.delete(taskId);
-         stringRedisTemplate.opsForZSet().remove(Config.NORMAL_ZSET, taskId);
-        stringRedisTemplate.opsForZSet().remove(Config.TEMP_ZSET, taskId);
-         stringRedisTemplate.opsForZSet().remove(Config.RETRY_ZSET, taskId);*/
+        /* stringRedisTemplate.delete(taskid);
+         stringRedisTemplate.opsForZSet().remove(Config.NORMAL_ZSET, taskid);
+        stringRedisTemplate.opsForZSet().remove(Config.TEMP_ZSET, taskid);
+         stringRedisTemplate.opsForZSet().remove(Config.RETRY_ZSET, taskid);*/
     }
 
     public void delTaskIdFromZset(String zsetName, String taskId) {
@@ -83,10 +83,10 @@ public class RedisOperator {
 
     // this method's only usage now is to update retried num when execution fails
     public void updateTask(TaskBase task) {
-        stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.id), JSON.toJSONString(task));
+        stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.taskid), JSON.toJSONString(task));
         // use lua script to combine them as an atomic one
-       /* long ttlMs = stringRedisTemplate.getExpire(task.taskId, TimeUnit.MILLISECONDS);
-        stringRedisTemplate.opsForValue().set(task.taskId, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
+       /* long ttlMs = stringRedisTemplate.getExpire(task.taskid, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set(task.taskid, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
     }
 
     public Set<String> getTaskIdsFromZset(String zsetName, long begin, long end) {
@@ -112,13 +112,13 @@ public class RedisOperator {
     private Boolean transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
         return stringRedisTemplate.execute(luaScript4TransferBetweenZsets, Arrays.asList(srcZsetName, destZsetName), taskId, score + "");
         // use lua script to combine them as an atomic one
-        /* stringRedisTemplate.opsForZSet().add(destBucketName, taskId, score);
-           stringRedisTemplate.opsForZSet().remove(srcBuckName, taskId);*/
+        /* stringRedisTemplate.opsForZSet().add(destBucketName, taskid, score);
+           stringRedisTemplate.opsForZSet().remove(srcBuckName, taskid);*/
     }
 
     public void refreshCronTask(TaskBase task) {
         stringRedisTemplate.execute(luaScript4RefreshCronTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET),
-                task.id, task.executionTime + "", JSON.toJSONString(task));
+                task.taskid, task.executionTime + "", JSON.toJSONString(task));
     }
 }

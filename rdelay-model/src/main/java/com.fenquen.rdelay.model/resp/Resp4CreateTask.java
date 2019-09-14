@@ -24,8 +24,4 @@ public class Resp4CreateTask extends RespBase {
 
     }
 
-    @Override
-    public DbMetaData getDbMetaData() {
-        return null;
-    }
 }

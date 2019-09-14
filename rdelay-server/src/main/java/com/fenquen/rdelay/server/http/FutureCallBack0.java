@@ -39,7 +39,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     static {
         PropertiesFactoryBean propertiesFactoryBean = SpringUtils.getBean(PropertiesFactoryBean.class);
         try {
-            destTopicName = propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.id");
+            destTopicName = propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.taskid");
             dashBoardEnabled = Boolean.valueOf(propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.region"));
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -70,7 +70,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     public void failed(Exception e) {
         // need to build a execution resp manually
         ExecutionResp executionResp = new ExecutionResp();
-        executionResp.taskId = task.id;
+        executionResp.taskId = task.taskid;
         executionResp.fail(e);
 
         sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
@@ -92,7 +92,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     private void successProcess() {
         // need to know whether the task is cron or not
         if (task.enableCron) {
-            CronExpression cronExpression = ZsetConsumer4NORMAL_ZSET.TASK_ID_CRON_EXPRESSION.get(task.id);
+            CronExpression cronExpression = ZsetConsumer4NORMAL_ZSET.TASK_ID_CRON_EXPRESSION.get(task.taskid);
 
             if (null == cronExpression) {
                 // there is no possibility to throw exception because the expression is verified at Portal first
@@ -102,16 +102,16 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
                     // impossible
                     LOGGER.error(e.getMessage(), e);
                 }
-                ZsetConsumer4NORMAL_ZSET.TASK_ID_CRON_EXPRESSION.put(task.id, cronExpression);
+                ZsetConsumer4NORMAL_ZSET.TASK_ID_CRON_EXPRESSION.put(task.taskid, cronExpression);
             }
 
             // calc the next execution time
             Date next = cronExpression.getNextValidTimeAfter(new Date());
             task.executionTime = next.getTime();
 
-            // remove taskId from TEMP_ZSET,update task,add taskId to NORMAL_ZSET with new executionTime
+            // remove taskid from TEMP_ZSET,update task,add taskid to NORMAL_ZSET with new executionTime
             try {
-                // LOGGER.info("cron refresh " + taskId + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
+                // LOGGER.info("cron refresh " + taskid + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
                 redisOperator.refreshCronTask(task);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
@@ -119,7 +119,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
         } else {
             // not a cron task,it is throw away
-            redisOperator.delTaskCompletely(task.id);
+            redisOperator.delTaskCompletely(task.taskid);
         }
     }
 
@@ -129,7 +129,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
-            redisOperator.delTaskCompletely(task.id);
+            redisOperator.delTaskCompletely(task.taskid);
         }
 
         // update retried num
@@ -141,6 +141,6 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
 
         long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
-        redisOperator.temp2Retry(task.id, score);
+        redisOperator.temp2Retry(task.taskid, score);
     }
 }

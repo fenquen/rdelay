@@ -6,7 +6,7 @@ public class ExecutionResp extends RespBase {
     public String taskId;
 
     public ExecutionResp(TaskBase abstractTask) {
-        taskId = abstractTask.id;
+        taskId = abstractTask.taskid;
     }
 
     public ExecutionResp() {

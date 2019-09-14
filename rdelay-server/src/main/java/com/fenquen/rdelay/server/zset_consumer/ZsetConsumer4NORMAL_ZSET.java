@@ -71,7 +71,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         long begin = now - Config.TASK_EXPIRE_MS;
 
         Set<String> taskIds = redisOperator.getTaskIdsFromZset(Config.NORMAL_ZSET, 0, now);
-        // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskId count " + taskIds.size());
+        // LOGGER.info("ZsetConsumer4NORMAL_ZSET consume taskid count " + taskIds.size());
         if (taskIds.size() > 0) {
             LOGGER.info("ZsetConsumer4NORMAL_ZSET get from NORMAL_ZSET taskIds {}", taskIds);
         }
@@ -81,12 +81,12 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
     }
 
     private void dispatchTaskId2Queue(String taskId) {
-        // the lua transfer script can tackle "if the same taskId is still in the corresponding queue"
+        // the lua transfer script can tackle "if the same taskid is still in the corresponding queue"
         TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
     }
 
     private void processTaskIdFromNormalZset(final String taskId) {
-        // this means that taskId is not in NORMAL_ZSET,no need to go ahead.
+        // this means that taskid is not in NORMAL_ZSET,no need to go ahead.
         if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
             return;
         }
@@ -124,7 +124,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         if (successPostBack) {
             // need to know whether the task is cron or not
             if (task.enableCron) {
-                CronExpression cronExpression = TASK_ID_CRON_EXPRESSION.get(taskId);
+                CronExpression cronExpression = TASK_ID_CRON_EXPRESSION.get(taskid);
 
                 if (null == cronExpression) {
                     // there is no possibility to throw exception because the expression is verified at Portal first
@@ -134,16 +134,16 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                         // impossible
                         LOGGER.error(e.getMessage(), e);
                     }
-                    TASK_ID_CRON_EXPRESSION.put(taskId, cronExpression);
+                    TASK_ID_CRON_EXPRESSION.put(taskid, cronExpression);
                 }
 
                 // calc the next execution time
                 Date next = cronExpression.getNextValidTimeAfter(new Date());
                 task.executionTime = next.getTime();
 
-                // remove taskId from TEMP_ZSET,update task,add taskId to NORMAL_ZSET with new executionTime
+                // remove taskid from TEMP_ZSET,update task,add taskid to NORMAL_ZSET with new executionTime
                 try {
-                   // LOGGER.info("cron refresh " + taskId + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
+                   // LOGGER.info("cron refresh " + taskid + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
                     redisOperator.refreshCronTask(task);
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
@@ -151,7 +151,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
             } else {
                 // not a cron task,it is throw away
-                redisOperator.delTaskCompletely(taskId);
+                redisOperator.delTaskCompletely(taskid);
             }
             return;
         }
@@ -159,7 +159,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
-            redisOperator.delTaskCompletely(taskId);
+            redisOperator.delTaskCompletely(taskid);
         }
 
         // update retried num
@@ -171,7 +171,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         }
 
         long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
-        redisOperator.temp2Retry(taskId, score);*/
+        redisOperator.temp2Retry(taskid, score);*/
     }
 
     public static final ThreadSafeWeakMap<String, CronExpression> TASK_ID_CRON_EXPRESSION = new ThreadSafeWeakMap<>(100);

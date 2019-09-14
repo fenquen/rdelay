@@ -3,10 +3,16 @@ package com.fenquen.rdelay.model.resp;
 import com.fenquen.rdelay.model.task.TaskBase;
 
 public class Resp4Query extends RespBase {
-    public TaskBase task;
+    public Object data;
 
     @Override
-    public DbMetaData getDbMetaData() {
-        return null;
+    void successInternal() {
+        super.successInternal();
+
+    }
+
+    @Override
+    void failInternal(Throwable throwable) {
+        super.failInternal(throwable);
     }
 }

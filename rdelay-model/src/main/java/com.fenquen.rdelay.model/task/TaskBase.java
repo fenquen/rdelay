@@ -5,11 +5,12 @@ import com.fenquen.rdelay.model.ModelBase;
 /**
  * a model describing timing task
  */
-public  class TaskBase extends ModelBase {
+public class TaskBase extends ModelBase {
+
     /**
      * unique tag to be distinguished by
      */
-    public String id;
+    public String taskid;
 
     /**
      * business tag

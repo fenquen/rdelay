@@ -91,9 +91,15 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
             return;
         }
 
-        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+        // always get from local weakMap first
+        String taskJsonStr = TASK_ID_JSONSTR.get(taskId);
+        if (null == taskJsonStr) {
+            taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+            TASK_ID_JSONSTR.put(taskId, taskJsonStr);
+        }
 
-        // not an elegant style to determine which sub class it actually is by a json string barely,need to be optimized
+
+        // not an elegant style to determine which sub class of TaskBase it actually is by a json string barely,need to be optimized
         String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
         TaskType taskType = TaskType.valueOf(taskTypeStr);
 
@@ -175,5 +181,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
     }
 
     public static final ThreadSafeWeakMap<String, CronExpression> TASK_ID_CRON_EXPRESSION = new ThreadSafeWeakMap<>(100);
+
+    private static final ThreadSafeWeakMap<String, String> TASK_ID_JSONSTR = new ThreadSafeWeakMap<>(100);
 }
 

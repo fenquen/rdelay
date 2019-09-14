@@ -1,11 +1,13 @@
 package com.fenquen.rdelay.server.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.model.req.Req4PauseTask;
+import com.fenquen.rdelay.model.req.Req4ResumeTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
-import com.fenquen.rdelay.model.req.Req4DelTask;
+import com.fenquen.rdelay.model.req.Req4AbortTaskManually;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
@@ -67,28 +69,67 @@ public class ServerPortal {
         return processTaskCreation(req4Create);
     }
 
-    @RequestMapping("/deleteTask")
-    public RespBase delete(@RequestBody Req4DelTask req4DelTask) {
+    @RequestMapping(value = "/abortTaskManually", method = RequestMethod.POST)
+    public RespBase abortTaskManually(@RequestBody Req4AbortTaskManually req4AbortTaskManually) {
         RespBase respBase = new RespBase();
         try {
-            String jsonStr = redisOperator.getTaskJsonStr(req4DelTask.taskId);
 
-            // taskid pattern taskType@uuid
-            String taskTypeStr = req4DelTask.taskId.split("@")[0];
-            TaskType taskType = TaskType.valueOf(taskTypeStr);
-
-            // modify taskState
-            TaskBase taskBase = JSON.parseObject(jsonStr, taskType.clazz);
-            taskBase.taskState = TaskBase.TaskState.ABORTED_MANUALLY;
-
-
-            kafkaTemplate.send(destTopicName, taskTypeStr, JSON.toJSONString(taskBase));
-            redisOperator.delTaskCompletely(req4DelTask.taskId);
+            if (!redisOperator.abortTaskManually(req4AbortTaskManually.taskId)) {
+                throw new RuntimeException("maybe the task is already already " +
+                        "ABORTED_MANUALLY, COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
+            }
+            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
         }
         return respBase;
+    }
+
+
+    @RequestMapping(value = "pauseTask", method = RequestMethod.POST)
+    public RespBase pauseTask(@RequestBody Req4PauseTask req4PauseTask) {
+        RespBase respBase = new RespBase();
+        try {
+            if (!redisOperator.pauseTask(req4PauseTask.taskId)) {
+                throw new RuntimeException("maybe the task is already already " +
+                        "PAUSED,ABORTED_MANUALLY,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
+            }
+            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED);
+            respBase.success();
+        } catch (Exception e) {
+            respBase.fail(e);
+        }
+        return respBase;
+    }
+
+    @RequestMapping(value = "resumeTask", method = RequestMethod.POST)
+    public RespBase resumeTask(@RequestBody Req4ResumeTask req4ResumeTask) {
+        RespBase respBase = new RespBase();
+        try {
+            if (!redisOperator.resumeTask(req4ResumeTask.taskId)) {
+                throw new RuntimeException("maybe the task is not paused now");
+            }
+            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL);
+            respBase.success();
+        } catch (Exception e) {
+            respBase.fail(e);
+        }
+        return respBase;
+    }
+
+    private void modifyState(String taskId, TaskBase.TaskState taskState) {
+        String jsonStr = redisOperator.getTaskJsonStr(taskId);
+
+        // taskid pattern taskType@uuid
+        String taskTypeStr = taskId.split("@")[0];
+        TaskType taskType = TaskType.valueOf(taskTypeStr);
+
+        // modify taskState
+        TaskBase taskBase = JSON.parseObject(jsonStr, taskType.clazz);
+        taskBase.taskState = taskState;
+
+        kafkaTemplate.send(destTopicName, taskTypeStr, JSON.toJSONString(taskBase));
     }
 
 

@@ -14,9 +14,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
-/**
- * Created by lmb on 2018/9/5.
- */
 //@Aspect
 //@Component
 public class MyAop {

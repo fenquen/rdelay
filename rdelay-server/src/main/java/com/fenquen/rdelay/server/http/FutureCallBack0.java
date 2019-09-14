@@ -1,7 +1,7 @@
 package com.fenquen.rdelay.server.http;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.ModelBase;
+import com.fenquen.rdelay.model.Persistence;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.utils.SpringUtils;
@@ -85,7 +85,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
     }
 
-    private void sendKafka(ModelBase.DbMetaData dbMetaData, String jsonStr) {
+    private void sendKafka(Persistence.DbMetaData dbMetaData, String jsonStr) {
         if (dashBoardEnabled) {
             kafkaTemplate.send(destTopicName, dbMetaData.name(), jsonStr);
         }
@@ -144,7 +144,6 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
         // update retried num
         redisOperator.updateTask(task);
-
         // update and sync retried count to dashboard
         sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
 

@@ -1,8 +1,8 @@
 package com.fenquen.rdelay.model.resp;
 
-import com.fenquen.rdelay.model.ModelBase;
+import com.fenquen.rdelay.model.Persistence;
 
-public class RespBase extends ModelBase {
+public class RespBase  {
     public Boolean success;
 
     public String errMsg;
@@ -28,8 +28,4 @@ public class RespBase extends ModelBase {
 
     }
 
-    @Override
-    public DbMetaData getDbMetaData() {
-        return null;
-    }
 }

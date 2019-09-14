@@ -1,12 +1,11 @@
 package com.fenquen.rdelay.model.task;
 
-import com.fenquen.rdelay.model.ModelBase;
-import com.fenquen.rdelay.model.annotation.Nullable;
+import com.fenquen.rdelay.model.Persistence;
 
 /**
  * a model describing timing task
  */
-public class TaskBase extends ModelBase {
+public class TaskBase implements Persistence {
 
     /**
      * unique tag to be distinguished by

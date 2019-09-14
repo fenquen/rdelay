@@ -1,8 +1,8 @@
 package com.fenquen.rdelay.model.req;
 
-public class Req4QueryTask {
+public class Req4PauseTask {
     /**
-     * TaskBase.taskid
+     *  TaskBase.taskid
      */
     public String taskId;
 }

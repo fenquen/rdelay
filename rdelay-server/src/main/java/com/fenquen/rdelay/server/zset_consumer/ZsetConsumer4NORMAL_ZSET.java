@@ -92,11 +92,11 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         }
 
         // always get from local weakMap first
-        String taskJsonStr = TASK_ID_JSONSTR.get(taskId);
-        if (null == taskJsonStr) {
-            taskJsonStr = redisOperator.getTaskJsonStr(taskId);
-            TASK_ID_JSONSTR.put(taskId, taskJsonStr);
-        }
+        // String taskJsonStr = TASK_ID_JSONSTR.get(taskId);
+        // if (null == taskJsonStr) {
+        String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
+        //  TASK_ID_JSONSTR.put(taskId, taskJsonStr);
+        // }
 
 
         // not an elegant style to determine which sub class of TaskBase it actually is by a json string barely,need to be optimized

@@ -1,7 +1,7 @@
 package com.fenquen.rdelay.model;
 
-public abstract class ModelBase {
-    public abstract DbMetaData getDbMetaData();
+public interface Persistence {
+    DbMetaData getDbMetaData();
 
     /**
      * meaningful only when this model need persistence

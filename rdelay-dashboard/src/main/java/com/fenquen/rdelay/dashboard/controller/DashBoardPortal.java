@@ -23,14 +23,14 @@ public class DashBoardPortal {
     private MongoTemplate mongoTemplate;
 
     @RequestMapping("/queryTask")
-    public Object queryTask(@RequestParam(defaultValue = "1") int pageNum,
-                            @RequestParam(defaultValue = "20") int pageSize) {
+    public Object queryTask(@RequestParam(defaultValue = "1") int page,
+                            @RequestParam(defaultValue = "20") int rows) {
         Map<String, Object> map = new HashMap<>();
 
         Query query = new Query();
         map.put("total", mongoTemplate.count(query, "TASK"));
 
-        query.with(PageRequest.of(pageNum - 1, pageSize));
+        query.with(PageRequest.of(page - 1, rows));
         map.put("rows", mongoTemplate.find(query, TaskBase.class, "TASK"));
 
         return map;

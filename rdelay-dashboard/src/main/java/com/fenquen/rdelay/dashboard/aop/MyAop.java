@@ -17,8 +17,8 @@ import java.util.Arrays;
 /**
  * Created by lmb on 2018/9/5.
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class MyAop {
     private static final Logger LOGGER = LoggerFactory.getLogger(MyAop.class);
 

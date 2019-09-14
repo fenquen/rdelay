@@ -6,14 +6,14 @@
     <link rel="stylesheet" type="text/css" href="/themes/material/easyui.css">
     <link rel="stylesheet" type="text/css" href="/themes/icon.css">
 </head>
-<body class="easyui-layout" >
+<body class="easyui-layout">
 <div data-options="region:'center',title:''">
     <table id="dg" title="" style="width:100%;height:100%" class="easyui-datagrid"
            data-options="rownumbers:true,singleSelect:true,pagination:true,url:'/queryTask',method:'get',fitColumns:true,pageSize:20">
         <thead>
         <tr>
+            <th data-options="field:'name',width:160,formatter:formatter">name</th>
             <th data-options="field:'taskid',width:160">taskid</th>
-            <th data-options="field:'name',width:160">name</th>
             <th data-options="field:'bizTag',width:100">bizTag</th>
             <th data-options="field:'taskType',width:80,align:'right'">taskType</th>
             <th data-options="field:'enableCron',width:80,align:'right'">enableCron</th>
@@ -27,11 +27,22 @@
         </thead>
     </table>
 </div>
+
+<div id="dlg" class="easyui-dialog" title="task detail"
+     data-options="draggable:false"
+     style="width:400px;height:200px;padding:10px">
+    The dialog content.
+</div>
+
 </body>
 </html>
 <script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript" src="/js/jquery.easyui.min.js"></script>
 <script type="text/javascript">
+    function formatter(value, row, index) {
+        return "<a href='javascript:void(0)' onclick='$(\"#dlg\").dialog(\"open\")'>" + value + "</a>"
+    }
+
     $(function () {
 
     })

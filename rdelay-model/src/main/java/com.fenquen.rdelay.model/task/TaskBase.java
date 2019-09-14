@@ -1,6 +1,7 @@
 package com.fenquen.rdelay.model.task;
 
 import com.fenquen.rdelay.model.ModelBase;
+import com.fenquen.rdelay.model.annotation.Nullable;
 
 /**
  * a model describing timing task
@@ -11,6 +12,10 @@ public class TaskBase extends ModelBase {
      * unique tag to be distinguished by
      */
     public String taskid;
+
+    public String name;
+
+    public String description;
 
     /**
      * business tag

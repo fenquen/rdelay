@@ -10,6 +10,11 @@ import java.lang.reflect.Field;
  * request for create a task
  */
 public abstract class Req4CreateTask {
+    public String name;
+
+
+    @Nullable
+    public String description;
 
     @Nullable
     public String bizTag;

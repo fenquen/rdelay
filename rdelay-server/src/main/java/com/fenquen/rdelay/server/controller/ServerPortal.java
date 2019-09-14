@@ -10,6 +10,7 @@ import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
+import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -70,6 +71,18 @@ public class ServerPortal {
     public RespBase delete(@RequestBody Req4DelTask req4DelTask) {
         RespBase respBase = new RespBase();
         try {
+            String jsonStr = redisOperator.getTaskJsonStr(req4DelTask.taskId);
+
+            // taskid pattern taskType@uuid
+            String taskTypeStr = req4DelTask.taskId.split("@")[0];
+            TaskType taskType = TaskType.valueOf(taskTypeStr);
+
+            // modify taskState
+            TaskBase taskBase = JSON.parseObject(jsonStr, taskType.clazz);
+            taskBase.taskState = TaskBase.TaskState.ABORTED_MANUALLY;
+
+
+            kafkaTemplate.send(destTopicName, taskTypeStr, JSON.toJSONString(taskBase));
             redisOperator.delTaskCompletely(req4DelTask.taskId);
             respBase.success();
         } catch (Exception e) {
@@ -128,6 +141,7 @@ public class ServerPortal {
         abstractTask.taskReceiveUrl = req4Create.getTaskReceiveUrl();
         abstractTask.createTime = new Date().getTime();
         abstractTask.taskType = req4Create.getTaskType();
+        abstractTask.taskState = TaskBase.TaskState.NORMAL;
 
         // verify the cron expression
         if (abstractTask.enableCron) {

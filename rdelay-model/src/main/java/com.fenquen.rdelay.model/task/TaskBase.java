@@ -10,6 +10,7 @@ public class TaskBase extends ModelBase {
 
     /**
      * unique tag to be distinguished by
+     * pattern: taskType@uuid
      */
     public String taskid;
 
@@ -41,6 +42,8 @@ public class TaskBase extends ModelBase {
 
     public long createTime;
 
+    public TaskState taskState;
+
     public final String getMyClazzName() {
         return getClass().getName();
     }
@@ -48,6 +51,14 @@ public class TaskBase extends ModelBase {
     @Override
     public DbMetaData getDbMetaData() {
         return DbMetaData.TASK;
+    }
+
+    public enum TaskState {
+        NORMAL,
+        PAUSED,
+        ABORTED_MANUALLY,
+        COMPLETED_NORMALLY,
+        ABORTED_WITH_TOO_MANY_RETRIES
     }
 }
 

@@ -55,6 +55,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         try {
             String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
+            // sync execution_resp to dashboard
             sendKafka(executionResp.getDbMetaData(), executionRespJsonStr);
             if (executionResp.success) {
                 successProcess();
@@ -73,6 +74,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         executionResp.taskId = task.taskid;
         executionResp.fail(e);
 
+        // sync execution_resp to dashboard
         sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
 
         failProcess();
@@ -120,22 +122,30 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         } else {
             // not a cron task,it is throw away
             redisOperator.delTaskCompletely(task.taskid);
+
+            // update and sync taskState to dashboard
+            task.taskState = TaskBase.TaskState.COMPLETED_NORMALLY;
+            sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+
         }
     }
 
     private void failProcess() {
-        task.retriedCount++;
-
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
             redisOperator.delTaskCompletely(task.taskid);
+
+            // update and sync taskState to dashboard
+            task.taskState = TaskBase.TaskState.ABORTED_WITH_TOO_MANY_RETRIES;
+            sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+            return;
         }
 
         // update retried num
         redisOperator.updateTask(task);
 
-        // send kfk
+        // update and sync retried count to dashboard
         sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
 
 

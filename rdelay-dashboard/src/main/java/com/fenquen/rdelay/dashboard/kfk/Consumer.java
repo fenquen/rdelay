@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Header;
@@ -42,8 +45,21 @@ public class Consumer {
 
         JSONObject jsonObject = JSON.parseObject(message);
 
+
         try {
+
+            if (dbMetaData == ModelBase.DbMetaData.TASK) {
+                Query query = new Query(Criteria.where("taskid").is(jsonObject.getString("taskid")));
+                // deal with task update(the sole scenario is add retried count when execution fails) somehow rigid
+                if (0 >= mongoTemplate.count(query, dbMetaData.tableName)) {
+                    mongoTemplate.upsert(query, new Update().set("retriedCount", jsonObject.getInteger("retriedCount")), dbMetaData.tableName);
+                    return;
+                }
+            }
+
             mongoTemplate.insert(jsonObject, dbMetaData.tableName);
+
+
         } catch (Exception e) {
             LOGGER.error("save mongodb ", e);
         }

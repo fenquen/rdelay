@@ -58,12 +58,12 @@ public class ServerPortal {
 
     @RequestMapping(value = "/createTask/STR_CONTENT", method = RequestMethod.POST)
     public RespBase createStrContentTask(@RequestBody Req4CreateStrContentTask req4Create) {
-        return process(req4Create);
+        return processTaskCreation(req4Create);
     }
 
     @RequestMapping(value = "/createTask/REFLECT", method = RequestMethod.POST)
     public RespBase createReflectTask(@RequestBody Req4CreateReflectionTask req4Create) {
-        return process(req4Create);
+        return processTaskCreation(req4Create);
     }
 
     @RequestMapping("/deleteTask")
@@ -79,7 +79,7 @@ public class ServerPortal {
     }
 
 
-    private RespBase process(Req4CreateTask req4CreateTask) {
+    private RespBase processTaskCreation(Req4CreateTask req4CreateTask) {
         Resp4CreateTask resp4CreateTask = new Resp4CreateTask();
         try {
             TaskBase task = parseReq4Create(req4CreateTask);

@@ -83,9 +83,9 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
     }
 
-    private void sendKafka(ModelBase.DbMetaData modelType, String jsonStr) {
+    private void sendKafka(ModelBase.DbMetaData dbMetaData, String jsonStr) {
         if (dashBoardEnabled) {
-            kafkaTemplate.send(destTopicName, modelType.name(), jsonStr);
+            kafkaTemplate.send(destTopicName, dbMetaData.name(), jsonStr);
         }
     }
 
@@ -134,6 +134,10 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
         // update retried num
         redisOperator.updateTask(task);
+
+        // send kfk
+        sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+
 
         int power = 1;
         for (int a = 0; task.retriedCount - 1 > a; a++) {

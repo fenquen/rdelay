@@ -1,25 +1,26 @@
-# rdelay[中文版](README_CH.MD)
-a redis-based lightweight distributable timing framework powered by spring boot,it is written in my spare time as an experimental work
+# rdelay[English](README.md)
+rdelay是一款基于redis的分布式轻量级定时任务框架,它是个人闲暇时间实验性质的工程
 
-### Theory
-Use redis ZSET to maintain taskIds which are ordered by their execution time asc,get the tasks whose execution time is 
-reached by now and then send them back to the url specified by each task respectively.It supports retry mechanism.
-
-
-### Attention
-The framework is now very primitive,there is much work ahead.Use it at your own risk.
+### 原理
+使用redis的ZSET维持基于任务执行时间的有序列表,后台会不断获取到达执行时间的任务并将器调度到该任务指定的应用服务(该服务需要集成rdelay-client-receiver),
+redelay任务支持失败重试机制
 
 
-### Rough structure
+### 注意
+该框架目前还处在相对原始的状态还有许多功能和优化项需要完成,如果你确实需要使用请自行承担可能带来的风险
+
+
+### 大体框架
 ![Rough structure](./assets/rdelay.png)
 
-### Task lifecycle
+### 任务的生命周期
 ![lifecycle](./assets/lifecycle.png)
 
-### Usage
+### 使用方式
 ##### rdelay-cli
+项目导入rdelay-cli.jar
 
-###### task creation(deliver text data) 
+###### 生成任务(传递文本消息)
 ``````
  public static void sendTask() throws Exception {
          // designate the rdelay server address where the task to be sent
@@ -42,7 +43,7 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
          //  }
      }
 ``````
-rdelay task also supports cron expression besides executionTime which can be triggered periodically
+rdelay任务也支持cron表达式,以实现循环任务的循环调用
 `````
 public static void sendCronTask() throws Exception {
         // designate the rdelay server address where the task to be sent
@@ -69,7 +70,7 @@ public static void sendCronTask() throws Exception {
 
     }
 ``````
-rdelay task also supports reflection invocation as long as use Req4CreateReflectionTask to create task
+rdelay任务同样支持反射调用,使用Req4CreateReflectionTask
 ``````
  public static void sendReflectionTask() throws Exception {
         // designate the rdelay server address where the task to be sent
@@ -99,7 +100,7 @@ rdelay task also supports reflection invocation as long as use Req4CreateReflect
         System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
     }
 ``````
-###### task lifecycle(pause,resume,abort)
+###### rdelay任务生命周期控制(暂停,恢复,停止)
 ``````
     public static void pauseTask() throws Exception {
         RespBase resp = RdelayCli.modifyTaskState(new Req4PauseTask("your taskid"));
@@ -117,9 +118,10 @@ rdelay task also supports reflection invocation as long as use Req4CreateReflect
         System.out.println(resp.success + "_" + resp.errMsg);
     }
 ``````
-#### rdelay-client-receiver(now only supports spring mvc controller)
-please import rdelay-client-receiver.jar<br>
-alternatively implements the interface StrContentTaskConsumer to process StrContentTask
+#### rdelay任务接收(目前只实现了spring mvc controller模式)
+项目引入rdelay-client-receiver.jar<br>
+
+######用户实现StrContentTaskConsumer(非强制)使用自定的逻辑处理StrContentTask中的文本消息
 ```java
 @Component
 public class TaskConsumer implements StrContentTaskConsumer {
@@ -129,3 +131,4 @@ public class TaskConsumer implements StrContentTaskConsumer {
     }
 }
 ```
+######反射调用任务ReflectionTask会在receiver接收后自动调用,该过程对用户是透明的

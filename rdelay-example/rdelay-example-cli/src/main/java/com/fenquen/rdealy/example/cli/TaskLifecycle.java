@@ -17,7 +17,7 @@ public class TaskLifecycle {
         System.out.println(resp.success + "_" + resp.errMsg);
     }
 
-    // the task is aborted it can not be available any more
+    // the task is aborted, it can not be available any more
     public static void abortTaskManually() throws Exception {
         RespBase resp = RdelayCli.modifyTaskState(new Req4AbortTaskManually("your taskid"));
         System.out.println(resp.success + "_" + resp.errMsg);

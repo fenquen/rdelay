@@ -1,9 +1,9 @@
 package com.fenquen.rdelay.model.req.modify_task;
 
-import com.fenquen.rdelay.model.req.ReqBase;
-
-public class Req4ResumeTask extends Req4ModifyTask {
-
+public class Req4ResumeTask extends Req4ModifyTaskState {
+    public Req4ResumeTask(String taskid) {
+        this.taskId = taskid;
+    }
 
     @Override
     public String getRequestUri() {

@@ -1,7 +1,7 @@
 package com.fenquen.rdealy.client.sender;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.req.modify_task.Req4ModifyTask;
+import com.fenquen.rdelay.model.req.modify_task.Req4ModifyTaskState;
 import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateTask;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
@@ -23,7 +23,7 @@ public class RdelayCli {
      * @return
      * @throws Exception
      */
-    public static <T extends Req4ModifyTask> RespBase modifyTask(T req4ModifyTask) throws Exception {
+    public static <T extends Req4ModifyTaskState> RespBase modifyTaskState(T req4ModifyTask) throws Exception {
         req4ModifyTask.verifyFields();
         return JSON.parseObject(HttpUtils.postStringContentSync(DEST_SVR_ADDR + req4ModifyTask.getRequestUri(), JSON.toJSONString(req4ModifyTask)), RespBase.class);
     }

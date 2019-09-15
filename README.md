@@ -16,7 +16,7 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 
 ### Usage
 
-#### task sender 
+#### task creation 
 ``````
 public static void sendTask() throws Exception {
         // designate the rdelay server address where the task to be sent

@@ -5,7 +5,7 @@ import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateStrContentTask;
 import com.fenquen.rdelay.model.resp.Resp4CreateTask;
 
-public class SenderExample {
+public class TaskCreation {
     public static void main(String[] args) throws Exception {
         sendCronTask();
     }

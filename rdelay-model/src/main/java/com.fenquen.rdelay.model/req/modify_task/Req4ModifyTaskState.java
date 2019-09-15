@@ -5,7 +5,7 @@ import com.fenquen.rdelay.model.req.ReqBase;
 
 import java.lang.reflect.Field;
 
-public abstract class Req4ModifyTask extends ReqBase {
+public abstract class Req4ModifyTaskState extends ReqBase {
 
     /**
      * TaskBase.taskid

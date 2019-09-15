@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Header;
@@ -34,10 +35,10 @@ public class Consumer {
         try {
             dbMetaData = Persistence.DbMetaData.valueOf(dbMetaDataName);
         } catch (Exception e) {
-            LOGGER.info("unrecognized ModelType {}", dbMetaDataName);
+            LOGGER.info("unrecognized DbMetaData {}", dbMetaDataName);
         }
 
-        // discard
+        // discard,don't know where to save data
         if (null == dbMetaData) {
             acknowledgment.acknowledge();
             return;
@@ -45,31 +46,31 @@ public class Consumer {
 
         JSONObject jsonObject = JSON.parseObject(message);
 
-
         try {
-
+            boolean needGoAhead = true;
             if (dbMetaData == Persistence.DbMetaData.TASK) {
-                Query query = new Query(Criteria.where("taskid").is(jsonObject.getString("taskid")));
-                // deal with task update(retriedCount++ when execution fails or taskState changes) somehow rigid
-                mongoTemplate.findAndRemove(query, TaskBase.class, dbMetaData.tableName);
-              //  mongoTemplate.updateMulti(query, new Update().set("retriedCount", jsonObject.getInteger("retriedCount")), dbMetaData.tableName);
-              //  return;
 
+                String taskid = jsonObject.getString("taskid");
+                Long versionNum = jsonObject.getLong("versionNum");
+                if (versionNum == null) {
+                    acknowledgment.acknowledge();
+                    return;
+                }
+
+                // need to compare versionNums,the biggest is the winner
+                Criteria criteria = Criteria.where("taskid").is(taskid).and("versionNum").lt(versionNum);
+                Query query = new Query(criteria);
+                if (null != mongoTemplate.findAndReplace(query, jsonObject, dbMetaData.tableName)) {
+                    needGoAhead = false;
+                }
             }
 
-            mongoTemplate.insert(jsonObject, dbMetaData.tableName);
-
-
+            if(needGoAhead){
+                mongoTemplate.insert(jsonObject, dbMetaData.tableName);
+            }
+            
         } catch (Exception e) {
             LOGGER.error("save mongodb ", e);
-        }
-
-
-        switch (dbMetaData) {
-            case TASK:
-                break;
-            case EXECUTION_RESP:
-                break;
         }
 
         acknowledgment.acknowledge();

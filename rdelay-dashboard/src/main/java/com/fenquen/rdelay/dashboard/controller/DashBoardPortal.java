@@ -1,5 +1,6 @@
 package com.fenquen.rdelay.dashboard.controller;
 
+import com.fenquen.rdelay.model.Persistence;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.model.task.TaskBase;
@@ -21,16 +22,16 @@ public class DashBoardPortal {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @RequestMapping("/queryTask")
-    public Object queryTask(@RequestParam(defaultValue = "1") int page,
+    @RequestMapping("/listTasks")
+    public Object listTasks(@RequestParam(defaultValue = "1") int page,
                             @RequestParam(defaultValue = "20") int rows) {
         Map<String, Object> map = new HashMap<>();
 
         Query query = new Query();
-        map.put("total", mongoTemplate.count(query, "TASK"));
+        map.put("total", mongoTemplate.count(query, Persistence.DbMetaData.TASK.tableName));
 
         query.with(PageRequest.of(page - 1, rows));
-        map.put("rows", mongoTemplate.find(query, TaskBase.class, "TASK"));
+        map.put("rows", mongoTemplate.find(query, TaskBase.class, Persistence.DbMetaData.TASK.tableName));
 
         return map;
     }
@@ -55,7 +56,23 @@ public class DashBoardPortal {
 
         Criteria criteria = Criteria.where("taskid").is(taskid);
 
-        return mongoTemplate.findOne(new Query(criteria), clazz, "TASK");
+        return mongoTemplate.findOne(new Query(criteria), clazz, Persistence.DbMetaData.TASK.tableName);
+
+    }
+
+    @RequestMapping("/listExecutionResps")
+    public Object listExecutionResps(@RequestParam(defaultValue = "1") int page,
+                                     @RequestParam(defaultValue = "20") int rows) {
+
+        Map<String, Object> map = new HashMap<>();
+
+        Query query = new Query();
+        map.put("total", mongoTemplate.count(query, Persistence.DbMetaData.EXECUTION_RESP.tableName));
+
+        query.with(PageRequest.of(page - 1, rows));
+        map.put("rows", mongoTemplate.find(query, TaskBase.class, Persistence.DbMetaData.EXECUTION_RESP.tableName));
+
+        return map;
 
     }
 }

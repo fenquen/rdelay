@@ -19,7 +19,7 @@
 
 </div>
 <!--<div data-options="region:'south',border:false" style="height:50px;background:#A9FACD;padding:10px;">south region</div>-->
-<div data-options="region:'center',title:'',split:false,border:false">
+<div data-options="region:'center',title:'',split:false,border:false" style="overflow: hidden">
     <div id="tt" class="easyui-tabs" data-options="border:false"
          style="width: 100%;height: 100%">
         <div title="welcome" style="padding: 10px" data-options="">
@@ -40,6 +40,9 @@
         var menuTreeData = [{
             "text": "rdelay-tasks",
             "url": "/rdelay-tasks.html"
+        }, {
+            "text": "rdelay_executionResps",
+            "url": "/rdelay_executionResps.html"
         }];
         $("#menu-tree").tree("loadData", menuTreeData);
 
@@ -51,9 +54,13 @@
 
                 $('#tt').tabs('add', {
                     title: node.text,
-                    content: '<iframe frameborder="0"  src="' + node.url + '" style="height: 100%;width: 100%"></iframe>',
+                    content: '<iframe frameborder="0" scrolling="no" src="' + node.url + '" style="height: 100%;width: 100%;border: 0px"></iframe>',
                     closable: true
                 });
+
+                window.setTimeout(function () {
+                    $('iframe').parent().css('overflow', "hidden")
+                })
             }
         });
     });

@@ -1,4 +1,4 @@
-package com.fenquen.rdealy.example.client.sender;
+package com.fenquen.rdealy.example.cli;
 
 import com.fenquen.rdealy.client.sender.RdelayCli;
 import com.fenquen.rdelay.model.req.create_task.Req4CreateReflectionTask;

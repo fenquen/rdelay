@@ -12,7 +12,7 @@
     <artifactId>rdelay-example</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>rdelay-example-client-sender</module>
+        <module>rdelay-example-cli</module>
         <module>rdelay-example-client-receiver</module>
     </modules>
 

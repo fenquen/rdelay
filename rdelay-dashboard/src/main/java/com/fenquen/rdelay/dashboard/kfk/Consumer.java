@@ -68,7 +68,7 @@ public class Consumer {
             if(needGoAhead){
                 mongoTemplate.insert(jsonObject, dbMetaData.tableName);
             }
-            
+
         } catch (Exception e) {
             LOGGER.error("save mongodb ", e);
         }

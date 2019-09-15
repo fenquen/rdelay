@@ -13,7 +13,7 @@
         <module>rdelay-server</module>
         <module>rdelay-utils</module>
         <module>rdelay-client-receiver</module>
-        <module>rdelay-client-sender</module>
+        <module>rdelay-cli</module>
         <module>rdelay-example</module>
         <module>rdelay-dashboard</module>
     </modules>

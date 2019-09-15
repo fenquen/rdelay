@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rdelay-client-sender</artifactId>
+    <artifactId>rdelay-cli</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.fenquen</groupId>

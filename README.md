@@ -1,4 +1,4 @@
-# rdelay[中文版](README_CH.MD)
+# rdelay[中文版](README_CH.md)
 a redis-based lightweight distributable timing framework powered by spring boot,it is written in my spare time as an experimental work
 
 ### Theory

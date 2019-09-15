@@ -26,7 +26,7 @@ public class TaskCreation {
 
         Resp4CreateTask resp4CreateTask = RdelayCli.sendTask(req4CreateStrContentTask);
 
-        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.id);
 
         //  Thread.sleep(60000000);
         //  }
@@ -54,7 +54,7 @@ public class TaskCreation {
 
         Resp4CreateTask resp4CreateTask = RdelayCli.sendTask(req4CreateStrContentTask);
 
-        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.id);
 
     }
 
@@ -84,6 +84,6 @@ public class TaskCreation {
 
         Resp4CreateTask resp4CreateTask = RdelayCli.sendTask(req4CreateReflectionTask);
 
-        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.errMsg);
+        System.out.println(resp4CreateTask.success + "_" + resp4CreateTask.id);
     }
 }

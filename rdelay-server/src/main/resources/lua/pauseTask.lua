@@ -23,7 +23,7 @@ for a = 1, 2 do
     if (score) then
         redis.call('ZREM', arr[a], taskId);
         redis.call('ZADD', PAUSE_ZSET, tonumber(score), taskId);
-        return redis.call("GET",taskId) .. "@" .. redis.call('INCR', 'VERSION_NUM');
+        return redis.call("GET",taskId) .. "&" .. redis.call('INCR', 'VERSION_NUM');
     end;
 end;
 -- the task is already ABORTED_MANUALLY ,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES

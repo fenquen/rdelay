@@ -13,6 +13,7 @@ if (score) then
 end;
 
 
+local jsonStr = redis.call("GET",taskId);
 redis.call("DEL", taskId);
 
 -- the expected states are NORMAL and PAUSED
@@ -21,7 +22,7 @@ for a = 1, 3 do
     local score = redis.call('ZSCORE', arr[a], taskId);
     if (score) then
         redis.call('ZREM', arr[a], taskId);
-        return redis.call("GET",taskId) .. "@" .. redis.call('INCR', 'VERSION_NUM');
+        return jsonStr .. "&" .. redis.call('INCR', 'VERSION_NUM');
     end;
 end;
 

@@ -43,23 +43,6 @@ public class ServerPortal {
     @Autowired
     private RedisOperator redisOperator;
 
-    @RequestMapping("/testKafka")
-    public String testKafka() {
-        kafkaTemplate.send(destTopicName, "TASK", "{\n" +
-                "    \"bizTag\": \"testBizTag\",\n" +
-                "    \"content\": \"testContent\",\n" +
-                "    \"createTime\": 1568011210377,\n" +
-                "    \"executionTime\": 1568011211833,\n" +
-                "    \"taskid\": \"STR_CONTENT@" + UUID.randomUUID() + "\n" +
-                "    \"maxRetryCount\": 3,\n" +
-                "    \"myClazzName\": \"com.fenquen.rdelay.model.task.StrContentTask\",\n" +
-                "    \"retriedCount\": 1,\n" +
-                "    \"taskReceiveUrl\": \"http://127.0.0.1:8080/rdelay/receiveTask/STR_CONTENT\",\n" +
-                "    \"taskType\": \"STR_CONTENT\"\n" +
-                "}");
-        return "{\"success\":true}";
-    }
-
     @RequestMapping(value = "/createTask/STR_CONTENT", method = RequestMethod.POST)
     public RespBase createStrContentTask(@RequestBody Req4CreateStrContentTask req4Create) {
         return processTaskCreation(req4Create);
@@ -73,63 +56,69 @@ public class ServerPortal {
     @RequestMapping(value = "/abortTaskManually", method = RequestMethod.POST)
     public RespBase abortTaskManually(@RequestBody Req4AbortTaskManually req4AbortTaskManually) {
         RespBase respBase = new RespBase();
-        String result = redisOperator.abortTaskManually(req4AbortTaskManually.taskId);
         try {
+            String result = redisOperator.abortTaskManually(req4AbortTaskManually.taskId);
             if (null == result) {
                 throw new RuntimeException("maybe the task is already already " +
                         "ABORTED_MANUALLY, COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY, Long.valueOf(result.split("@")[2]));
+            postProcess(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY, result);
             respBase.success();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             respBase.fail(e);
         }
         return respBase;
     }
 
-
-    @RequestMapping(value = "pauseTask", method = RequestMethod.POST)
+    @RequestMapping(value = "/pauseTask", method = RequestMethod.POST)
     public RespBase pauseTask(@RequestBody Req4PauseTask req4PauseTask) {
         RespBase respBase = new RespBase();
-        String result = redisOperator.pauseTask(req4PauseTask.taskId);
         try {
+            String result = redisOperator.pauseTask(req4PauseTask.taskId);
             if (null == result) {
                 throw new RuntimeException("maybe the task is already already " +
                         "PAUSED,ABORTED_MANUALLY,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED, Long.valueOf(result.split("@")[2]));
+            postProcess(req4PauseTask.taskId, TaskBase.TaskState.PAUSED, result);
             respBase.success();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             respBase.fail(e);
         }
         return respBase;
     }
 
-    @RequestMapping(value = "resumeTask", method = RequestMethod.POST)
+    @RequestMapping(value = "/resumeTask", method = RequestMethod.POST)
     public RespBase resumeTask(@RequestBody Req4ResumeTask req4ResumeTask) {
         RespBase respBase = new RespBase();
-        String result = redisOperator.resumeTask(req4ResumeTask.taskId);
         try {
+            String result = redisOperator.resumeTask(req4ResumeTask.taskId);
             if (null == result) {
                 throw new RuntimeException("maybe the task is not paused now");
             }
-            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL, Long.valueOf(result.split("@")[2]));
+            postProcess(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL, result);
             respBase.success();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             respBase.fail(e);
         }
         return respBase;
     }
 
-    private void modifyState(String taskId, TaskBase.TaskState taskState, Long versionNum) {
+    private void postProcess(String taskid, TaskBase.TaskState taskState, String luaResult) {
+        String[] arr = luaResult.split("&");
+
+        String jsonStr = arr[0];
+        Long versionNum = Long.valueOf(arr[1]);
         if (!dashBoardEnabled) {
             return;
         }
 
-        String jsonStr = redisOperator.getTaskJsonStr(taskId);
+        //String jsonStr = redisOperator.getTaskJsonStr(taskId);
 
         // taskid pattern taskType@uuid
-        String taskTypeStr = taskId.split("@")[0];
+        String taskTypeStr = taskid.split("@")[0];
         TaskType taskType = TaskType.valueOf(taskTypeStr);
 
         // modify taskState
@@ -184,7 +173,7 @@ public class ServerPortal {
         }
 
         // common part
-        // how to build a rich functionally taskid? taskType@uuid@cronExpression
+        // how to build postProcess rich functionally taskid? taskType@uuid@cronExpression
         taskBase.name = req4Create.name;
         taskBase.taskid = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString();
         taskBase.bizTag = req4Create.bizTag;

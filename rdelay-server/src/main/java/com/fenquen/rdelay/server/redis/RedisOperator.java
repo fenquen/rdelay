@@ -21,13 +21,13 @@ public class RedisOperator {
     private StringRedisTemplate stringRedisTemplate;
 
     private DefaultRedisScript<Boolean> luaScript4TransferBetweenZsets;
-    private DefaultRedisScript<Boolean> luaScript4DeleteTaskCompletely;
-    private DefaultRedisScript<Boolean> luaScript4CreateTask;
-    private DefaultRedisScript<Boolean> luaScript4UpdateTask;
+    private DefaultRedisScript<Long> luaScript4DeleteTaskCompletely;
+    private DefaultRedisScript<Long> luaScript4CreateTask;
+    private DefaultRedisScript<Long> luaScript4UpdateTask;
     private DefaultRedisScript<Boolean> luaScript4RefreshCronTask;
-    private DefaultRedisScript<Boolean> luaScript4AbortTaskManually;
-    private DefaultRedisScript<Boolean> luaScript4PauseTask;
-    private DefaultRedisScript<Boolean> luaScript4ResumeTask;
+    private DefaultRedisScript<Long> luaScript4AbortTaskManually;
+    private DefaultRedisScript<Long> luaScript4PauseTask;
+    private DefaultRedisScript<Long> luaScript4ResumeTask;
 
 
     @PostConstruct
@@ -39,43 +39,43 @@ public class RedisOperator {
 
         // luaScript4DeleteTaskCompletely
         luaScript4DeleteTaskCompletely = new DefaultRedisScript<>();
-        luaScript4DeleteTaskCompletely.setResultType(Boolean.class);
+        luaScript4DeleteTaskCompletely.setResultType(Long.class);
         luaScript4DeleteTaskCompletely.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/deleteTaskCompletely.lua")));
 
         // luaScript4CreateTask
         luaScript4CreateTask = new DefaultRedisScript<>();
-        luaScript4CreateTask.setResultType(Boolean.class);
+        luaScript4CreateTask.setResultType(Long.class);
         luaScript4CreateTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/createTask.lua")));
 
         // luaScript4DeleteTaskCompletely
         luaScript4UpdateTask = new DefaultRedisScript<>();
-        luaScript4UpdateTask.setResultType(Boolean.class);
+        luaScript4UpdateTask.setResultType(Long.class);
         luaScript4UpdateTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/updateTask.lua")));
 
         // luaScript4RefreshCronTask
         luaScript4RefreshCronTask = new DefaultRedisScript<>();
-        luaScript4CreateTask.setResultType(Boolean.class);
+        luaScript4RefreshCronTask.setResultType(Boolean.class);
         luaScript4RefreshCronTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/refreshCronTask.lua")));
 
         // luaScript4AbortTaskManually
         luaScript4AbortTaskManually = new DefaultRedisScript<>();
-        luaScript4AbortTaskManually.setResultType(Boolean.class);
+        luaScript4AbortTaskManually.setResultType(Long.class);
         luaScript4AbortTaskManually.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/abortTaskManually.lua")));
 
         // luaScript4PauseTask
         luaScript4PauseTask = new DefaultRedisScript<>();
-        luaScript4PauseTask.setResultType(Boolean.class);
+        luaScript4PauseTask.setResultType(Long.class);
         luaScript4PauseTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/pauseTask.lua")));
 
         // luaScript4ResumeTask
         luaScript4ResumeTask = new DefaultRedisScript<>();
-        luaScript4ResumeTask.setResultType(Boolean.class);
+        luaScript4ResumeTask.setResultType(Long.class);
         luaScript4ResumeTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/resumeTask.lua")));
 
     }
 
-    public void createTask(TaskBase task) {
-        stringRedisTemplate.execute(luaScript4CreateTask,
+    public Long createTask(TaskBase task) {
+        return stringRedisTemplate.execute(luaScript4CreateTask,
                 Collections.singletonList(Config.NORMAL_ZSET),
                 task.taskid, JSON.toJSONString(task), Config.TASK_EXPIRE_MS + "", task.executionTime + "");
         // use lua script to combine them as an atomic one
@@ -87,8 +87,10 @@ public class RedisOperator {
         return stringRedisTemplate.opsForValue().get(id);
     }
 
-    public void delTaskCompletely(String taskId) {
-        stringRedisTemplate.execute(luaScript4DeleteTaskCompletely, Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET), taskId);
+    // used only when COMPLETED_NORMALLY,ABORTED_WITH_TOO_MANY_RETRIES,taskid is in TEMP_ZSET
+    public Long delTaskCompletely(String taskId) {
+        return stringRedisTemplate.execute(luaScript4DeleteTaskCompletely,
+                Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET), taskId);
         // use lua script to combine them as an atomic one
         /* stringRedisTemplate.delete(taskid);
          stringRedisTemplate.opsForZSet().remove(Config.NORMAL_ZSET, taskid);
@@ -101,8 +103,9 @@ public class RedisOperator {
     }
 
     // this method's only usage now is to update retried num when execution fails
-    public void updateTask(TaskBase task) {
-        stringRedisTemplate.execute(luaScript4UpdateTask, Collections.singletonList(task.taskid), JSON.toJSONString(task));
+    public Long updateTask(TaskBase task) {
+        return stringRedisTemplate.execute(luaScript4UpdateTask,
+                Collections.singletonList(task.taskid), JSON.toJSONString(task));
         // use lua script to combine them as an atomic one
        /* long ttlMs = stringRedisTemplate.getExpire(task.taskid, TimeUnit.MILLISECONDS);
         stringRedisTemplate.opsForValue().set(task.taskid, JSON.toJSONString(task), ttlMs, TimeUnit.MILLISECONDS);*/
@@ -129,7 +132,8 @@ public class RedisOperator {
     }
 
     private Boolean transferBetweenZsets(String srcZsetName, String destZsetName, String taskId, long score) {
-        return stringRedisTemplate.execute(luaScript4TransferBetweenZsets, Arrays.asList(srcZsetName, destZsetName), taskId, score + "");
+        return stringRedisTemplate.execute(luaScript4TransferBetweenZsets,
+                Arrays.asList(srcZsetName, destZsetName), taskId, score + "");
         // use lua script to combine them as an atomic one
         /* stringRedisTemplate.opsForZSet().add(destBucketName, taskid, score);
            stringRedisTemplate.opsForZSet().remove(srcBuckName, taskid);*/
@@ -141,17 +145,17 @@ public class RedisOperator {
                 task.taskid, task.executionTime + "", JSON.toJSONString(task));
     }
 
-    public Boolean abortTaskManually(String taskid) {
+    public Long abortTaskManually(String taskid) {
         return stringRedisTemplate.execute(luaScript4AbortTaskManually,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET, Config.PAUSE_ZSET), taskid);
     }
 
-    public Boolean pauseTask(String taskid) {
+    public Long pauseTask(String taskid) {
         return stringRedisTemplate.execute(luaScript4PauseTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET, Config.PAUSE_ZSET), taskid);
     }
 
-    public Boolean resumeTask(String taskid) {
+    public Long resumeTask(String taskid) {
         return stringRedisTemplate.execute(luaScript4ResumeTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.PAUSE_ZSET), taskid);
     }

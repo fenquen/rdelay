@@ -60,10 +60,10 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
             if (executionResp.success) {
                 successProcess();
             } else {
-                failProcess();
+                failureProcess();
             }
         } catch (Exception e) {
-            failProcess();
+            failureProcess();
         }
     }
 
@@ -77,7 +77,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         // sync execution_resp to dashboard
         sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
 
-        failProcess();
+        failureProcess();
     }
 
     @Override
@@ -121,7 +121,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
 
         } else {
             // not a cron task,it is throw away
-            redisOperator.delTaskCompletely(task.taskid);
+            task.versionNum = redisOperator.delTaskCompletely(task.taskid);
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.COMPLETED_NORMALLY;
@@ -130,11 +130,11 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
     }
 
-    private void failProcess() {
+    private void failureProcess() {
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
-            redisOperator.delTaskCompletely(task.taskid);
+            task.versionNum = redisOperator.delTaskCompletely(task.taskid);
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.ABORTED_WITH_TOO_MANY_RETRIES;
@@ -143,7 +143,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
 
         // update retried num
-        redisOperator.updateTask(task);
+        task.versionNum = redisOperator.updateTask(task);
         // update and sync retried count to dashboard
         sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
 

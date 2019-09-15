@@ -7,8 +7,8 @@ local score = redis.call('ZSCORE', PAUSE_ZSET, taskId);
 if (score) then
     redis.call('ZREM', PAUSE_ZSET, taskId);
     redis.call('ZADD', NORMAL_ZSET, tonumber(score), taskId);
-    return true;
+    return redis.call('INCR', 'VERSION_NUM');
 end;
 
-return false;
+return 0;
 

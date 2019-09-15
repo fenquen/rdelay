@@ -7,3 +7,4 @@ local reaminLifeMs = redis.call("PTTL", taskId);
 if (tonumber(reaminLifeMs) > 0 ) then
     redis.call("PSETEX", taskId, reaminLifeMs, taskJsonStr)
 end;
+return redis.call('INCR', 'VERSION_NUM');

@@ -37,11 +37,16 @@ public class TaskBase implements Persistence {
 
     public int retriedCount;
 
+    /**
+     * the url of the controller which receives this task
+     */
     public String taskReceiveUrl;
 
     public long createTime;
 
     public TaskState taskState;
+
+    public Long versionNum;
 
     public final String getMyClazzName() {
         return getClass().getName();
@@ -52,6 +57,9 @@ public class TaskBase implements Persistence {
         return DbMetaData.TASK;
     }
 
+    /**
+     * describe the lifecycle of a task
+     */
     public enum TaskState {
         NORMAL,
         PAUSED,

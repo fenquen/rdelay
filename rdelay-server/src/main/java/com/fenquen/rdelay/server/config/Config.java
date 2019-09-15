@@ -7,6 +7,7 @@ public class Config {
     public static final String PAUSE_ZSET = "PAUSE_ZSET";
     public static final long TASK_EXPIRE_MS = Integer.MAX_VALUE * 1000L;//
     public static final int ZSET_PROCESS_BATCH_SIZE = 20;
+    public static final int FAILURE_VERSION_NUM = 0;
 
     public static final int RETRY_INTERVAL_SECOND = 10;
 

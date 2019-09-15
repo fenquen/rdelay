@@ -7,3 +7,4 @@ redis.call("DEL", taskId);
 redis.call("ZREM", NORMAL_ZSET, taskId);
 redis.call("ZREM", TEMP_ZSET, taskId);
 redis.call("ZREM", RETRY_ZSET, taskId);
+return redis.call('INCR', 'VERSION_NUM');

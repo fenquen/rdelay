@@ -13,6 +13,7 @@ import com.fenquen.rdelay.model.resp.RespBase;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.model.task.TaskType;
+import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -72,13 +73,13 @@ public class ServerPortal {
     @RequestMapping(value = "/abortTaskManually", method = RequestMethod.POST)
     public RespBase abortTaskManually(@RequestBody Req4AbortTaskManually req4AbortTaskManually) {
         RespBase respBase = new RespBase();
+        Long versionNum = redisOperator.abortTaskManually(req4AbortTaskManually.taskId);
         try {
-
-            if (!redisOperator.abortTaskManually(req4AbortTaskManually.taskId)) {
+            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
                 throw new RuntimeException("maybe the task is already already " +
                         "ABORTED_MANUALLY, COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY);
+            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY, versionNum);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -90,12 +91,13 @@ public class ServerPortal {
     @RequestMapping(value = "pauseTask", method = RequestMethod.POST)
     public RespBase pauseTask(@RequestBody Req4PauseTask req4PauseTask) {
         RespBase respBase = new RespBase();
+        Long versionNum = redisOperator.pauseTask(req4PauseTask.taskId);
         try {
-            if (!redisOperator.pauseTask(req4PauseTask.taskId)) {
+            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
                 throw new RuntimeException("maybe the task is already already " +
                         "PAUSED,ABORTED_MANUALLY,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED);
+            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED, versionNum);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -106,11 +108,12 @@ public class ServerPortal {
     @RequestMapping(value = "resumeTask", method = RequestMethod.POST)
     public RespBase resumeTask(@RequestBody Req4ResumeTask req4ResumeTask) {
         RespBase respBase = new RespBase();
+        Long versionNum = redisOperator.resumeTask(req4ResumeTask.taskId);
         try {
-            if (!redisOperator.resumeTask(req4ResumeTask.taskId)) {
+            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
                 throw new RuntimeException("maybe the task is not paused now");
             }
-            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL);
+            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL, versionNum);
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -118,7 +121,11 @@ public class ServerPortal {
         return respBase;
     }
 
-    private void modifyState(String taskId, TaskBase.TaskState taskState) {
+    private void modifyState(String taskId, TaskBase.TaskState taskState, Long versionNum) {
+        if (!dashBoardEnabled) {
+            return;
+        }
+
         String jsonStr = redisOperator.getTaskJsonStr(taskId);
 
         // taskid pattern taskType@uuid
@@ -128,6 +135,7 @@ public class ServerPortal {
         // modify taskState
         TaskBase taskBase = JSON.parseObject(jsonStr, taskType.clazz);
         taskBase.taskState = taskState;
+        taskBase.versionNum = versionNum;
 
         kafkaTemplate.send(destTopicName, taskTypeStr, JSON.toJSONString(taskBase));
     }
@@ -139,7 +147,7 @@ public class ServerPortal {
             TaskBase task = parseReq4Create(req4CreateTask);
 
             // redis
-            redisOperator.createTask(task);
+            task.versionNum = redisOperator.createTask(task);
 
             // send newly built task
             if (dashBoardEnabled) {

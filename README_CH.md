@@ -16,8 +16,12 @@ redelay任务支持失败重试机制
 ### 任务的生命周期
 ![lifecycle](./assets/lifecycle.png)
 
+### rdelay-dashboard
+该可选component用来收集任务的统计信息,例如任务统计和任务调用情况统计,提供web ui界面展示统计信息。它使用mongodb存储统计信息
+![dashboard](assets/dashboard.png)
+
 ### 使用方式
-##### rdelay-cli
+#### rdelay-cli
 项目导入rdelay-cli.jar
 
 ###### 生成任务(传递文本消息)
@@ -132,3 +136,6 @@ public class TaskConsumer implements StrContentTaskConsumer {
 }
 ```
 ######反射调用任务ReflectionTask会在receiver接收后自动调用,该过程对用户是透明的
+
+
+

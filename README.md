@@ -16,6 +16,11 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 ### Task lifecycle
 ![lifecycle](./assets/lifecycle.png)
 
+### rdelay-dashboard
+This optional component is used to collect statistics data such as tasks and task execution status,the data is displayed
+by web ui.It uses mongodb store statistics data.
+![dashboard](assets/dashboard.png)
+
 ### Usage
 ##### rdelay-cli
 

@@ -9,7 +9,7 @@ local taskId = ARGV[1];
 -- the taskid in TEMP_ZSET means it is waiting for execution resp,you can not modify it
 local score = redis.call("ZSCORE", TEMP_ZSET, taskId);
 if (score) then
-    return 0;
+    return nil;
 end;
 
 
@@ -21,9 +21,9 @@ for a = 1, 3 do
     local score = redis.call('ZSCORE', arr[a], taskId);
     if (score) then
         redis.call('ZREM', arr[a], taskId);
-        return redis.call('INCR', 'VERSION_NUM');
+        return redis.call("GET",taskId) .. "@" .. redis.call('INCR', 'VERSION_NUM');
     end;
 end;
 
 -- means the task not in the zsets above,its state has already become ABORTED_MANUALLY, COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES
-return 0;
+return nil;

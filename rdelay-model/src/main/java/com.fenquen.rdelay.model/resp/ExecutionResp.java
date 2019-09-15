@@ -4,10 +4,15 @@ import com.fenquen.rdelay.model.Persistence;
 import com.fenquen.rdelay.model.task.TaskBase;
 
 public class ExecutionResp extends RespBase implements Persistence {
-    public String taskId;
+    public String taskid;
 
-    public ExecutionResp(TaskBase abstractTask) {
-        taskId = abstractTask.taskid;
+    public String taskName;
+
+    public long executionTime;
+
+    public ExecutionResp(TaskBase taskBase) {
+        taskid = taskBase.taskid;
+        taskName = taskBase.name;
     }
 
     public ExecutionResp() {
@@ -22,6 +27,7 @@ public class ExecutionResp extends RespBase implements Persistence {
     @Override
     protected void successInternal() {
         super.successInternal();
+        executionTime = System.currentTimeMillis();
     }
 
     @Override

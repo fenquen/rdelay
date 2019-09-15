@@ -73,13 +73,13 @@ public class ServerPortal {
     @RequestMapping(value = "/abortTaskManually", method = RequestMethod.POST)
     public RespBase abortTaskManually(@RequestBody Req4AbortTaskManually req4AbortTaskManually) {
         RespBase respBase = new RespBase();
-        Long versionNum = redisOperator.abortTaskManually(req4AbortTaskManually.taskId);
+        String result = redisOperator.abortTaskManually(req4AbortTaskManually.taskId);
         try {
-            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
+            if (null == result) {
                 throw new RuntimeException("maybe the task is already already " +
                         "ABORTED_MANUALLY, COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY, versionNum);
+            modifyState(req4AbortTaskManually.taskId, TaskBase.TaskState.ABORTED_MANUALLY, Long.valueOf(result.split("@")[2]));
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -91,13 +91,13 @@ public class ServerPortal {
     @RequestMapping(value = "pauseTask", method = RequestMethod.POST)
     public RespBase pauseTask(@RequestBody Req4PauseTask req4PauseTask) {
         RespBase respBase = new RespBase();
-        Long versionNum = redisOperator.pauseTask(req4PauseTask.taskId);
+        String result = redisOperator.pauseTask(req4PauseTask.taskId);
         try {
-            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
+            if (null == result) {
                 throw new RuntimeException("maybe the task is already already " +
                         "PAUSED,ABORTED_MANUALLY,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES");
             }
-            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED, versionNum);
+            modifyState(req4PauseTask.taskId, TaskBase.TaskState.PAUSED, Long.valueOf(result.split("@")[2]));
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -108,12 +108,12 @@ public class ServerPortal {
     @RequestMapping(value = "resumeTask", method = RequestMethod.POST)
     public RespBase resumeTask(@RequestBody Req4ResumeTask req4ResumeTask) {
         RespBase respBase = new RespBase();
-        Long versionNum = redisOperator.resumeTask(req4ResumeTask.taskId);
+        String result = redisOperator.resumeTask(req4ResumeTask.taskId);
         try {
-            if (null == versionNum || Config.FAILURE_VERSION_NUM == versionNum) {
+            if (null == result) {
                 throw new RuntimeException("maybe the task is not paused now");
             }
-            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL, versionNum);
+            modifyState(req4ResumeTask.taskId, TaskBase.TaskState.NORMAL, Long.valueOf(result.split("@")[2]));
             respBase.success();
         } catch (Exception e) {
             respBase.fail(e);
@@ -137,7 +137,7 @@ public class ServerPortal {
         taskBase.taskState = taskState;
         taskBase.versionNum = versionNum;
 
-        kafkaTemplate.send(destTopicName, taskTypeStr, JSON.toJSONString(taskBase));
+        kafkaTemplate.send(destTopicName, taskBase.getDbMetaData().name(), JSON.toJSONString(taskBase));
     }
 
 
@@ -148,6 +148,10 @@ public class ServerPortal {
 
             // redis
             task.versionNum = redisOperator.createTask(task);
+
+            if (null == task.versionNum || Config.FAILURE_VERSION_NUM == task.versionNum) {
+                throw new RuntimeException("processTaskCreation,null==task.versionNum");
+            }
 
             // send newly built task
             if (dashBoardEnabled) {
@@ -166,14 +170,14 @@ public class ServerPortal {
 
     @SuppressWarnings("ConstantConditions")
     private TaskBase parseReq4Create(Req4CreateTask req4Create) throws Exception {
-        TaskBase abstractTask;
+        TaskBase taskBase;
 
         switch (req4Create.getTaskType()) {
             case STR_CONTENT:
-                abstractTask = new StrContentTask();
+                taskBase = new StrContentTask();
                 break;
             case REFLECTION:
-                abstractTask = new ReflectionTask();
+                taskBase = new ReflectionTask();
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -181,21 +185,22 @@ public class ServerPortal {
 
         // common part
         // how to build a rich functionally taskid? taskType@uuid@cronExpression
-        abstractTask.taskid = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString() + "@";
-        abstractTask.bizTag = req4Create.bizTag;
-        abstractTask.enableCron = req4Create.enableCron;
-        abstractTask.executionTime = req4Create.executionTime;
-        abstractTask.cronExpression = req4Create.cronExpression;
-        abstractTask.maxRetryCount = req4Create.maxRetryCount;
-        abstractTask.taskReceiveUrl = req4Create.getTaskReceiveUrl();
-        abstractTask.createTime = new Date().getTime();
-        abstractTask.taskType = req4Create.getTaskType();
-        abstractTask.taskState = TaskBase.TaskState.NORMAL;
+        taskBase.name = req4Create.name;
+        taskBase.taskid = req4Create.getTaskType().name() + "@" + UUID.randomUUID().toString();
+        taskBase.bizTag = req4Create.bizTag;
+        taskBase.enableCron = req4Create.enableCron;
+        taskBase.executionTime = req4Create.executionTime;
+        taskBase.cronExpression = req4Create.cronExpression;
+        taskBase.maxRetryCount = req4Create.maxRetryCount;
+        taskBase.taskReceiveUrl = req4Create.getTaskReceiveUrl();
+        taskBase.createTime = new Date().getTime();
+        taskBase.taskType = req4Create.getTaskType();
+        taskBase.taskState = TaskBase.TaskState.NORMAL;
 
         // verify the cron expression
-        if (abstractTask.enableCron) {
-            CronExpression cronExpression = new CronExpression(abstractTask.cronExpression);
-            abstractTask.executionTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
+        if (taskBase.enableCron) {
+            CronExpression cronExpression = new CronExpression(taskBase.cronExpression);
+            taskBase.executionTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
             // save the binding mapping,temporary solution
         }
 
@@ -203,10 +208,10 @@ public class ServerPortal {
         // custom part
         switch (req4Create.getTaskType()) {
             case STR_CONTENT:
-                ((StrContentTask) abstractTask).content = ((Req4CreateStrContentTask) req4Create).content;
+                ((StrContentTask) taskBase).content = ((Req4CreateStrContentTask) req4Create).content;
                 break;
             case REFLECTION:
-                ReflectionTask reflectionTask = (ReflectionTask) abstractTask;
+                ReflectionTask reflectionTask = (ReflectionTask) taskBase;
                 Req4CreateReflectionTask req4CreateReflectTask = (Req4CreateReflectionTask) req4Create;
 
                 reflectionTask.className = req4CreateReflectTask.className;
@@ -217,6 +222,6 @@ public class ServerPortal {
         }
 
 
-        return abstractTask;
+        return taskBase;
     }
 }

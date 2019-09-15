@@ -1,12 +1,14 @@
 package com.fenquen.rdelay.dashboard.controller;
 
 import com.fenquen.rdelay.model.Persistence;
+import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.task.TaskType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -31,6 +33,7 @@ public class DashBoardPortal {
         map.put("total", mongoTemplate.count(query, Persistence.DbMetaData.TASK.tableName));
 
         query.with(PageRequest.of(page - 1, rows));
+        query.with(Sort.by(Sort.Order.desc("createTime")));
         map.put("rows", mongoTemplate.find(query, TaskBase.class, Persistence.DbMetaData.TASK.tableName));
 
         return map;
@@ -70,7 +73,8 @@ public class DashBoardPortal {
         map.put("total", mongoTemplate.count(query, Persistence.DbMetaData.EXECUTION_RESP.tableName));
 
         query.with(PageRequest.of(page - 1, rows));
-        map.put("rows", mongoTemplate.find(query, TaskBase.class, Persistence.DbMetaData.EXECUTION_RESP.tableName));
+        query.with(Sort.by(Sort.Order.desc("executionTime")));
+        map.put("rows", mongoTemplate.find(query, ExecutionResp.class, Persistence.DbMetaData.EXECUTION_RESP.tableName));
 
         return map;
 

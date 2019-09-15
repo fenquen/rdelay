@@ -25,9 +25,9 @@ public class RedisOperator {
     private DefaultRedisScript<Long> luaScript4CreateTask;
     private DefaultRedisScript<Long> luaScript4UpdateTask;
     private DefaultRedisScript<Boolean> luaScript4RefreshCronTask;
-    private DefaultRedisScript<Long> luaScript4AbortTaskManually;
-    private DefaultRedisScript<Long> luaScript4PauseTask;
-    private DefaultRedisScript<Long> luaScript4ResumeTask;
+    private DefaultRedisScript<String> luaScript4AbortTaskManually;
+    private DefaultRedisScript<String> luaScript4PauseTask;
+    private DefaultRedisScript<String> luaScript4ResumeTask;
 
 
     @PostConstruct
@@ -59,17 +59,17 @@ public class RedisOperator {
 
         // luaScript4AbortTaskManually
         luaScript4AbortTaskManually = new DefaultRedisScript<>();
-        luaScript4AbortTaskManually.setResultType(Long.class);
+        luaScript4AbortTaskManually.setResultType(String.class);
         luaScript4AbortTaskManually.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/abortTaskManually.lua")));
 
         // luaScript4PauseTask
         luaScript4PauseTask = new DefaultRedisScript<>();
-        luaScript4PauseTask.setResultType(Long.class);
+        luaScript4PauseTask.setResultType(String.class);
         luaScript4PauseTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/pauseTask.lua")));
 
         // luaScript4ResumeTask
         luaScript4ResumeTask = new DefaultRedisScript<>();
-        luaScript4ResumeTask.setResultType(Long.class);
+        luaScript4ResumeTask.setResultType(String.class);
         luaScript4ResumeTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/resumeTask.lua")));
 
     }
@@ -145,17 +145,17 @@ public class RedisOperator {
                 task.taskid, task.executionTime + "", JSON.toJSONString(task));
     }
 
-    public Long abortTaskManually(String taskid) {
+    public String abortTaskManually(String taskid) {
         return stringRedisTemplate.execute(luaScript4AbortTaskManually,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET, Config.PAUSE_ZSET), taskid);
     }
 
-    public Long pauseTask(String taskid) {
+    public String pauseTask(String taskid) {
         return stringRedisTemplate.execute(luaScript4PauseTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.TEMP_ZSET, Config.RETRY_ZSET, Config.PAUSE_ZSET), taskid);
     }
 
-    public Long resumeTask(String taskid) {
+    public String resumeTask(String taskid) {
         return stringRedisTemplate.execute(luaScript4ResumeTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.PAUSE_ZSET), taskid);
     }

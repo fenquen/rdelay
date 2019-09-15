@@ -9,8 +9,9 @@ redis.call('PSETEX', taskId, taskTTLMs, taskJsonStr);
 
 if (nil == redis.call('GET', taskId)) then
     redis.log(redis.LOG_NOTICE, 'PSETEX failed when creation');
-    return false;
+    return nil;
 end;
 
 
 redis.call('ZADD', NORMAL_ZSET, taskExecuteTime, taskId)
+return redis.call('INCR', 'VERSION_NUM');

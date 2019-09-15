@@ -21,7 +21,7 @@ public class TaskCreation {
         req4CreateStrContentTask.bizTag = "testBizTag";
         // run after 2s
         req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
-        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8090";
         req4CreateStrContentTask.content = "testContent";
 
         Resp4CreateTask resp4CreateTask = RdelayCli.sendTask(req4CreateStrContentTask);
@@ -39,7 +39,7 @@ public class TaskCreation {
 
         Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
-        req4CreateStrContentTask.name="rdelay-task";
+        req4CreateStrContentTask.name="rdelayCrontask";
         req4CreateStrContentTask.bizTag = "testBizTag";
 
         // enable cron
@@ -49,7 +49,7 @@ public class TaskCreation {
         // cron expression,executed per 2h
         req4CreateStrContentTask.cronExpression = "0/10 * * * * ? ";
 
-        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        req4CreateStrContentTask.executionAppSvrAddr = "http://127.0.0.1:8090";
         req4CreateStrContentTask.content = "testContent";
 
         Resp4CreateTask resp4CreateTask = RdelayCli.sendTask(req4CreateStrContentTask);
@@ -74,7 +74,7 @@ public class TaskCreation {
         // cron expression,executed per 2h
         req4CreateReflectionTask.cronExpression = "0/10 * * * * ? ";
 
-        req4CreateReflectionTask.executionAppSvrAddr = "http://127.0.0.1:8080";
+        req4CreateReflectionTask.executionAppSvrAddr = "http://127.0.0.1:8090";
 
         // necessary for reflection
         req4CreateReflectionTask.className = "com.a.d";

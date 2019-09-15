@@ -53,6 +53,7 @@ public class Consumer {
                 String taskid = jsonObject.getString("taskid");
                 Long versionNum = jsonObject.getLong("versionNum");
                 if (versionNum == null) {
+                    LOGGER.info("versionNum == null");
                     acknowledgment.acknowledge();
                     return;
                 }

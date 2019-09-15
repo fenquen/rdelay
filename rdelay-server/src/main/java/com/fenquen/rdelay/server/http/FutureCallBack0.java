@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.Persistence;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.task.TaskBase;
-import com.fenquen.rdelay.server.utils.SpringUtils;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.server.zset_consumer.ZsetConsumer4NORMAL_ZSET;
@@ -14,39 +13,45 @@ import org.apache.http.util.EntityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
-public class FutureCallBack0 implements FutureCallback<HttpResponse> {
+@Component
+public class FutureCallBack0 implements FutureCallback<HttpResponse>, InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(FutureCallBack0.class);
 
-    private RedisOperator redisOperator = SpringUtils.getBean(RedisOperator.class);
-    private TaskBase task;
+    @Autowired
+    private RedisOperator redisOperator;// = SpringUtils.getBean(RedisOperator.class);
+    private static RedisOperator redisOperator_;
 
-    private static String destTopicName = "rdealy-dashboard";
+    @Value("${rdelay.dashboard.topic.name}")
+    private String destTopicName;//= "rdealy-dashboard";
+    private static String destTopicName_;
 
-    private static Boolean dashBoardEnabled = false;
+    @Value("${rdelay.dashboard.enabled}")
+    private Boolean dashBoardEnabled;//= false;
+    private static Boolean dashBoardEnabled_;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+    private static KafkaTemplate<String, String> kafkaTemplate_;
 
-    static {
-        PropertiesFactoryBean propertiesFactoryBean = SpringUtils.getBean(PropertiesFactoryBean.class);
-        try {
-            destTopicName = propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.taskid");
-            dashBoardEnabled = Boolean.valueOf(propertiesFactoryBean.getObject().getProperty("dispatcher.bridge.region"));
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+
+    private TaskBase task;
+
+    public FutureCallBack0() {
+
     }
 
     public FutureCallBack0(TaskBase abstractTask) {
+        //  SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
         this.task = abstractTask;
     }
 
@@ -63,15 +68,17 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
                 failureProcess();
             }
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             failureProcess();
         }
     }
 
     @Override
     public void failed(Exception e) {
+        LOGGER.error(e.getMessage(), e);
         // need to build a execution resp manually
         ExecutionResp executionResp = new ExecutionResp();
-        executionResp.taskId = task.taskid;
+        executionResp.taskid = task.taskid;
         executionResp.fail(e);
 
         // sync execution_resp to dashboard
@@ -86,8 +93,8 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
     }
 
     private void sendKafka(Persistence.DbMetaData dbMetaData, String jsonStr) {
-        if (dashBoardEnabled) {
-            kafkaTemplate.send(destTopicName, dbMetaData.name(), jsonStr);
+        if (dashBoardEnabled_) {
+            kafkaTemplate_.send(destTopicName_, dbMetaData.name(), jsonStr);
         }
     }
 
@@ -114,14 +121,14 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
             // remove taskid from TEMP_ZSET,update task,add taskid to NORMAL_ZSET with new executionTime
             try {
                 // LOGGER.info("cron refresh " + taskid + "_" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(next) + "_" + next.getTime() + "\n");
-                redisOperator.refreshCronTask(task);
+                redisOperator_.refreshCronTask(task);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             }
 
         } else {
             // not a cron task,it is throw away
-            task.versionNum = redisOperator.delTaskCompletely(task.taskid);
+            task.versionNum = redisOperator_.delTaskCompletely(task.taskid);
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.COMPLETED_NORMALLY;
@@ -134,7 +141,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {
-            task.versionNum = redisOperator.delTaskCompletely(task.taskid);
+            task.versionNum = redisOperator_.delTaskCompletely(task.taskid);
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.ABORTED_WITH_TOO_MANY_RETRIES;
@@ -143,7 +150,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
 
         // update retried num
-        task.versionNum = redisOperator.updateTask(task);
+        task.versionNum = redisOperator_.updateTask(task);
         // update and sync retried count to dashboard
         sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
 
@@ -154,6 +161,14 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse> {
         }
 
         long score = System.currentTimeMillis() + Config.RETRY_INTERVAL_SECOND * 1000 * power;
-        redisOperator.temp2Retry(task.taskid, score);
+        redisOperator_.temp2Retry(task.taskid, score);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        kafkaTemplate_ = kafkaTemplate;
+        redisOperator_ = redisOperator;
+        destTopicName_ = destTopicName;
+        dashBoardEnabled_ = dashBoardEnabled;
     }
 }

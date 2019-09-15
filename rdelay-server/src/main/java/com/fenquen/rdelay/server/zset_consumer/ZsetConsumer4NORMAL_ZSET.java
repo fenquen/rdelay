@@ -90,10 +90,10 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         }
 
         // always get from local weakMap first
-        // String taskJsonStr = TASK_ID_JSONSTR.get(taskId);
+        // String taskJsonStr = TASK_ID_JSONSTR.get(taskid);
         // if (null == taskJsonStr) {
         String taskJsonStr = redisOperator.getTaskJsonStr(taskId);
-        //  TASK_ID_JSONSTR.put(taskId, taskJsonStr);
+        //  TASK_ID_JSONSTR.put(taskid, taskJsonStr);
         // }
 
 
@@ -111,7 +111,9 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                 break;
         }
 
-        HttpUtils.postStringContentAsync(task.taskReceiveUrl, taskJsonStr, new FutureCallBack0(task));
+       FutureCallBack0 handler = new FutureCallBack0(task);
+
+        HttpUtils.postStringContentAsync(task.taskReceiveUrl, taskJsonStr, handler);
 
        /* boolean successPostBack = true;
         try {

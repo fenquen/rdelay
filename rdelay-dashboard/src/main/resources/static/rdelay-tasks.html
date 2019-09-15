@@ -12,26 +12,131 @@
            data-options="rownumbers:true,singleSelect:true,pagination:true,url:'/queryTask',method:'get',fitColumns:true,pageSize:20">
         <thead>
         <tr>
-            <th data-options="field:'name',width:160,formatter:formatter">name</th>
-            <th data-options="field:'taskid',width:160">taskid</th>
-            <th data-options="field:'bizTag',width:100">bizTag</th>
+            <th data-options="field:'name',width:80,formatter:formatter">name</th>
             <th data-options="field:'taskType',width:80,align:'right'">taskType</th>
             <th data-options="field:'enableCron',width:80,align:'right'">enableCron</th>
             <th data-options="field:'cronExpression',width:80">cronExpression</th>
             <th data-options="field:'executionTime',width:60,align:'center'">executionTime</th>
-            <th data-options="field:'taskReceiveUrl',width:80">taskReceiveUrl</th>
+            <th data-options="field:'taskReceiveUrl',width:160">taskReceiveUrl</th>
             <th data-options="field:'createTime',width:100">createTime</th>
-            <th data-options="field:'maxRetryCount',width:80,align:'right'">maxRetryCount</th>
+
+
+            <!-- <th data-options="field:'taskid',width:160">taskid</th>
+             <th data-options="field:'bizTag',width:100">bizTag</th>
+             <th data-options="field:'maxRetryCount',width:80,align:'right'">maxRetryCount</th>-->
 
         </tr>
         </thead>
     </table>
 </div>
 
-<div id="dlg" class="easyui-dialog" title="task detail"
-     data-options="draggable:false"
+<div id="STR_CONTENT_dialog" class="easyui-dialog" title="StrContentTask detail"
+     data-options="draggable:false,closed:true"
+     style="width:60%;height:60%;padding:10px">
+    <form id="STR_CONTENT_form" method="post">
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="name" style="width:100%" data-options="label:'Name',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskid" style="width:100%" data-options="label:'taskid',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="bizTag" style="width:100%" data-options="label:'bizTag',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskType" style="width:100%" data-options="label:'taskType',labelWidth:100">
+        </div>
+
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="enableCron" style="width:100%" data-options="label:'enableCron',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="executionTime" style="width:100%" data-options="label:'executionTime',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="cronExpression" style="width:100%"
+                   data-options="label:'cronExpression',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskReceiveUrl" style="width:100%"
+                   data-options="label:'taskReceiveUrl',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="createTime" style="width:100%" data-options="label:'createTime',labelWidth:100">
+        </div>
+
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="maxRetryCount" style="width:100%" data-options="label:'maxRetryCount',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="retriedCount" style="width:100%" data-options="label:'retriedCount',labelWidth:100">
+        </div>
+
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="content" style="width:100%" data-options="label:'content',labelWidth:100">
+        </div>
+    </form>
+</div>
+
+</div>
+<div id="REFLECTION_dialog" class="easyui-dialog" title="ReflectionTask detail"
+     data-options="draggable:false,closed:true"
      style="width:400px;height:200px;padding:10px">
-    The dialog content.
+    <form id="REFLECTION_form" method="post">
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="name" style="width:100%" data-options="label:'Name',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskid" style="width:100%" data-options="label:'taskid',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="bizTag" style="width:100%" data-options="label:'bizTag',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskType" style="width:100%" data-options="label:'taskType',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="enableCron" style="width:100%" data-options="label:'enableCron',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="executionTime" style="width:100%" data-options="label:'executionTime',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="cronExpression" style="width:100%"
+                   data-options="label:'cronExpression',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="taskReceiveUrl" style="width:100%"
+                   data-options="label:'taskReceiveUrl',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="createTime" style="width:100%" data-options="label:'createTime',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="maxRetryCount" style="width:100%" data-options="label:'maxRetryCount',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="retriedCount" style="width:100%" data-options="label:'retriedCount',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="content" style="width:100%" data-options="label:'content',labelWidth:100">
+        </div>
+
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="className" style="width:100%" data-options="label:'className',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="methodName" style="width:100%" data-options="label:'methodName',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="paramTypeNames" style="width:100%" data-options="label:'paramTypeNames',labelWidth:100">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="params" style="width:100%" data-options="label:'params',labelWidth:100">
+        </div>
+
+    </form>
+
 </div>
 
 </body>
@@ -40,10 +145,19 @@
 <script type="text/javascript" src="/js/jquery.easyui.min.js"></script>
 <script type="text/javascript">
     function formatter(value, row, index) {
-        return "<a href='javascript:void(0)' onclick='$(\"#dlg\").dialog(\"open\")'>" + value + "</a>"
+        if (row.taskid.indexOf("STR_CONTENT") > -1) {
+            return "<a href='javascript:void(0)' onclick='openDialogAndLoadFormData(\"#STR_CONTENT_dialog\",\"#STR_CONTENT_form\",\"" + row.taskid + "\",\"" + row.taskType + "\")'>" + value + "</a>"
+        }
+
+        if (row.taskid.indexOf("REFLECT") > -1) {
+            return "<a href='javascript:void(0)' onclick='openDialogAndLoadFormData(\"#REFLECTION_dialog\",\"#REFLECTION_form\",\"" + row.taskid + "\"," + row.taskType + "\")'>" + value + "</a>"
+        }
+
     }
 
-    $(function () {
+    function openDialogAndLoadFormData(dialogId, formId, taskid, tasktype) {
+        $(dialogId).dialog('open');
+        $(formId).form('load', '/queryTaskDetail?taskid=' + taskid + '&taskType=' + tasktype)
 
-    })
+    }
 </script>

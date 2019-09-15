@@ -17,6 +17,7 @@ public class TaskCreation {
         //  while (true) {
         Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
+        req4CreateStrContentTask.name="rdelay-task";
         req4CreateStrContentTask.bizTag = "testBizTag";
         // run after 2s
         req4CreateStrContentTask.executionTime = System.currentTimeMillis() + 2000;
@@ -38,6 +39,7 @@ public class TaskCreation {
 
         Req4CreateStrContentTask req4CreateStrContentTask = new Req4CreateStrContentTask();
 
+        req4CreateStrContentTask.name="rdelay-task";
         req4CreateStrContentTask.bizTag = "testBizTag";
 
         // enable cron
@@ -62,6 +64,7 @@ public class TaskCreation {
 
         Req4CreateReflectionTask req4CreateReflectionTask = new Req4CreateReflectionTask();
 
+        req4CreateReflectionTask.name="rdelay-task";
         req4CreateReflectionTask.bizTag = "testBizTag";
 
         // enable cron

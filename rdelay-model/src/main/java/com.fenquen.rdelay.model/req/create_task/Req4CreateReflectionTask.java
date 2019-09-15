@@ -4,7 +4,7 @@ import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.model.annotation.Nullable;
 
 public final class Req4CreateReflectionTask extends Req4CreateTask {
-    // below fields are meaningful only when taskType is REFLECT
+    // below fields are meaningful only when taskType is REFLECTION
     public String className;
 
     public String methodName;
@@ -17,7 +17,7 @@ public final class Req4CreateReflectionTask extends Req4CreateTask {
 
     @Override
     public TaskType getTaskType() {
-        return TaskType.REFLECT;
+        return TaskType.REFLECTION;
     }
 
     @Override
@@ -38,7 +38,7 @@ public final class Req4CreateReflectionTask extends Req4CreateTask {
         }
     }
 
-    public static final String URL = TaskType.REFLECT.name();
+    public static final String URL = TaskType.REFLECTION.name();
 
     @Override
     public String getRequestUri() {

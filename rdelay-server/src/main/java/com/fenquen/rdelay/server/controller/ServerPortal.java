@@ -172,7 +172,7 @@ public class ServerPortal {
             case STR_CONTENT:
                 abstractTask = new StrContentTask();
                 break;
-            case REFLECT:
+            case REFLECTION:
                 abstractTask = new ReflectionTask();
                 break;
             default:
@@ -205,7 +205,7 @@ public class ServerPortal {
             case STR_CONTENT:
                 ((StrContentTask) abstractTask).content = ((Req4CreateStrContentTask) req4Create).content;
                 break;
-            case REFLECT:
+            case REFLECTION:
                 ReflectionTask reflectionTask = (ReflectionTask) abstractTask;
                 Req4CreateReflectionTask req4CreateReflectTask = (Req4CreateReflectionTask) req4Create;
 

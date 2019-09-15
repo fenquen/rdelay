@@ -2,8 +2,6 @@ package com.fenquen.rdelay.server.zset_consumer;
 
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.task.TaskType;
-import com.fenquen.rdelay.model.task.ReflectionTask;
-import com.fenquen.rdelay.model.task.StrContentTask;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.http.FutureCallBack0;
@@ -105,7 +103,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
         TaskBase task = null;
         switch (taskType) {
-            case REFLECT:
+            case REFLECTION:
                 task = JSON.parseObject(taskJsonStr, taskType.clazz);
                 break;
             case STR_CONTENT:

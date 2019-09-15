@@ -48,11 +48,13 @@
 
         $("#menu-tree").tree({
             "onClick": function (node) {
-                if ($('#tt').tabs('getTab', node.text)) {
+                var tt = $('#tt');
+                if (tt.tabs('getTab', node.text)) {
+                    tt.tabs('select', node.text);
                     return;
                 }
 
-                $('#tt').tabs('add', {
+                tt.tabs('add', {
                     title: node.text,
                     content: '<iframe frameborder="0" scrolling="no" src="' + node.url + '" style="height: 100%;width: 100%;border: 0px"></iframe>',
                     closable: true

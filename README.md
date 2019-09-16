@@ -18,7 +18,7 @@ The framework is now very primitive,there is much work ahead.Use it at your own 
 
 ### rdelay-dashboard
 This optional component is used to collect statistics data such as tasks and task execution status,the data is displayed
-by web ui.It uses mongodb store statistics data.
+by web ui.It uses mongodb to store statistics data.
 ![dashboard](assets/dashboard.png)
 
 ### Usage

@@ -24,7 +24,9 @@ public class RedisOperator {
     private DefaultRedisScript<Long> luaScript4DeleteTaskCompletely;
     private DefaultRedisScript<Long> luaScript4CreateTask;
     private DefaultRedisScript<Long> luaScript4UpdateTask;
+
     private DefaultRedisScript<Boolean> luaScript4RefreshCronTask;
+
     private DefaultRedisScript<String> luaScript4AbortTaskManually;
     private DefaultRedisScript<String> luaScript4PauseTask;
     private DefaultRedisScript<String> luaScript4ResumeTask;
@@ -102,7 +104,7 @@ public class RedisOperator {
         stringRedisTemplate.opsForZSet().remove(zsetName, taskId);
     }
 
-    // this method's only usage now is to update retried num when execution fails
+    // this method's only usage now is to update retried num when execution fails,in asyncHttp callBack
     public Long updateTask(TaskBase task) {
         return stringRedisTemplate.execute(luaScript4UpdateTask,
                 Collections.singletonList(task.taskid), JSON.toJSONString(task));

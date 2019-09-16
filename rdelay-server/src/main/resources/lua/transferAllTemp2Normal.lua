@@ -1,4 +1,4 @@
--- transfer all keys with scores in TEMP_ZSET to NORMAL_ZSET
+-- transfer all keys with scores in TEMP_ZSET to NORMAL_ZSET,it is useful when server boots up
 local TEMP_ZSET = KEYS[1];
 local NORMAL_ZSET = KEYS[2];
 

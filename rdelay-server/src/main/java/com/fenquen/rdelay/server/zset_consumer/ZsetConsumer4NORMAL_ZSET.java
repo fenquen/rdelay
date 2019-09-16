@@ -55,6 +55,9 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                 }
             });
         });
+
+        // transfer temp to normal to prevent being stale forever
+        redisOperator.transferAllTemp2Normal();
     }
 
     @Autowired
@@ -111,7 +114,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
                 break;
         }
 
-       FutureCallBack0 handler = new FutureCallBack0(task);
+        FutureCallBack0 handler = new FutureCallBack0(task);
 
         HttpUtils.postStringContentAsync(task.taskReceiveUrl, taskJsonStr, handler);
 

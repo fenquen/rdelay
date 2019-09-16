@@ -31,6 +31,8 @@ public class RedisOperator {
     private DefaultRedisScript<String> luaScript4PauseTask;
     private DefaultRedisScript<String> luaScript4ResumeTask;
 
+    private DefaultRedisScript<Boolean> luascript4TransferAllTemp2Normal;
+
 
     @PostConstruct
     public void init() {
@@ -73,6 +75,11 @@ public class RedisOperator {
         luaScript4ResumeTask = new DefaultRedisScript<>();
         luaScript4ResumeTask.setResultType(String.class);
         luaScript4ResumeTask.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/resumeTask.lua")));
+
+        // luaScript4ResumeTask
+        luascript4TransferAllTemp2Normal = new DefaultRedisScript<>();
+        luascript4TransferAllTemp2Normal.setResultType(Boolean.class);
+        luascript4TransferAllTemp2Normal.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/resumeTask.lua")));
 
     }
 
@@ -160,5 +167,9 @@ public class RedisOperator {
     public String resumeTask(String taskid) {
         return stringRedisTemplate.execute(luaScript4ResumeTask,
                 Arrays.asList(Config.NORMAL_ZSET, Config.PAUSE_ZSET), taskid);
+    }
+
+    public Boolean transferAllTemp2Normal() {
+        return stringRedisTemplate.execute(luascript4TransferAllTemp2Normal, Arrays.asList(Config.TEMP_ZSET, Config.NORMAL_ZSET));
     }
 }

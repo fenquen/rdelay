@@ -25,7 +25,6 @@ public class MyAop {
 
     @Before("webLog()")
     public void doBefore(JoinPoint joinPoint) throws Throwable {
-        // 接收到请求，记录请求内容
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
 
@@ -42,7 +41,6 @@ public class MyAop {
     }
 
     /**
-     * 方法执行
      *
      * @param proceedingJoinPoint
      * @return

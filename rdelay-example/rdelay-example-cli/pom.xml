@@ -20,7 +20,6 @@
         <dependency>
             <groupId>com.fenquen</groupId>
             <artifactId>rdelay-cli</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -30,10 +29,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
 
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 </project>

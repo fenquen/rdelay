@@ -55,21 +55,9 @@ public class DashBoardPortal {
 
         TaskType taskType = TaskType.valueOf(taskTypeName);
 
-        Class<? extends TaskBase> clazz;
-        switch (taskType) {
-            case STR_CONTENT:
-                clazz = StrContentTask.class;
-                break;
-            case REFLECTION:
-                clazz = ReflectionTask.class;
-                break;
-            default:
-                throw new UnsupportedOperationException("unrecognized taskType " + taskType);
-        }
-
         Criteria criteria = Criteria.where("taskid").is(taskid);
 
-        return mongoTemplate.findOne(new Query(criteria), clazz, Persistence.DbMetaData.TASK.tableName);
+        return mongoTemplate.findOne(new Query(criteria), taskType.clazz, Persistence.DbMetaData.TASK.tableName);
 
     }
 

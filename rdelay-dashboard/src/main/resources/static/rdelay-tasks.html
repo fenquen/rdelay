@@ -20,7 +20,7 @@
             <th data-options="field:'taskReceiveUrl',width:160">taskReceiveUrl</th>
             <th data-options="field:'createTime',width:100">createTime</th>
             <th data-options="field:'taskState',width:100">taskState</th>
-
+            <th data-options="field:'',width:100">OPERATIONS</th>
             <!-- <th data-options="field:'taskid',width:160">taskid</th>
              <th data-options="field:'bizTag',width:100">bizTag</th>
              <th data-options="field:'maxRetryCount',width:80,align:'right'">maxRetryCount</th>-->
@@ -185,6 +185,25 @@
     function openDialogAndLoadFormData(dialogId, formId, taskid, tasktype) {
         $(dialogId).dialog('open');
         $(formId).form('load', '/queryTaskDetail?taskid=' + taskid + '&taskType=' + tasktype)
+
+    }
+
+    function operationFormatter(value, row, index) {
+        switch (row.taskStae) {
+            case"NORMAL":
+                return "<a href='javascript:void(0)' onclick='ajax(\"/pauseTask\"" + "?taskid=" + row.taskid + ")'>pause</a>" +
+                    "&nbsp<a href='javascript:void(0)' onclick='ajax(\"/abortTaskManually\"" + "?taskid=" + row.taskid + ")'>abort</a>";
+            case"PAUSED":
+                return "<a href='javascript:void(0)' onclick='ajax(\"/resumeTask\"" + "?taskid=" + row.taskid + ")'>resume</a>" +
+                    "&nbsp<a href='javascript:void(0)' onclick='ajax(\"/abortTaskManually\"" + "?taskid=" + row.taskid + ")'>abort</a>"
+            case"ABORTED_MANUALLY":
+            case"COMPELTED_NORMALLY":
+            case"ABORTED_WITH_TOO_MANY_RETRIES":
+                return ""
+        }
+    }
+
+    function ajax(url) {
 
     }
 </script>

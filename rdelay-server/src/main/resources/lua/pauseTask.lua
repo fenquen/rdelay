@@ -6,14 +6,14 @@ local taskId = ARGV[1];
 
 -- alreay paused
 if (redis.call('ZSCORE', PAUSE_ZSET, taskId)) then
-    return 0;
+    return nil;
 end;
 
 
 -- the taskid in TEMP_ZSET means it is waiting for execution resp,you can not modify it
 local score = redis.call("ZSCORE", TEMP_ZSET, taskId);
 if (score) then
-    return 0;
+    return nil;
 end;
 
 -- the expected state is NORMAL
@@ -27,4 +27,4 @@ for a = 1, 2 do
     end;
 end;
 -- the task is already ABORTED_MANUALLY ,COMPLETED_NORMALLY or ABORTED_WITH_TOO_MANY_RETRIES
-return 0;
+return nil;

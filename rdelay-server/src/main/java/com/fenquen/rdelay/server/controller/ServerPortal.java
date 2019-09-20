@@ -31,7 +31,7 @@ public class ServerPortal {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerPortal.class);
 
     @Value("${rdelay.dashboard.topic.name}")
-    private String destTopicName;
+    private String dashboardTopicName;
 
     @Value("${rdelay.dashboard.enabled}")
     private Boolean dashBoardEnabled;
@@ -126,7 +126,7 @@ public class ServerPortal {
         taskBase.taskState = taskState;
         taskBase.versionNum = versionNum;
 
-        kafkaTemplate.send(destTopicName, taskBase.getDbMetaData().name(), JSON.toJSONString(taskBase));
+        kafkaTemplate.send(dashboardTopicName, taskBase.getDbMetaData().name(), JSON.toJSONString(taskBase));
     }
 
 
@@ -144,7 +144,7 @@ public class ServerPortal {
 
             // send newly built task
             if (dashBoardEnabled) {
-                kafkaTemplate.send(destTopicName, task.getDbMetaData().name(), JSON.toJSONString(task));
+                kafkaTemplate.send(dashboardTopicName, task.getDbMetaData().name(), JSON.toJSONString(task));
             }
 
             resp4CreateTask.id = task.taskid;

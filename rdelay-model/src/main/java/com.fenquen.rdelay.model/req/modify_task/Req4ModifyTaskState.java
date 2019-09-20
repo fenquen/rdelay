@@ -24,6 +24,12 @@ public abstract class Req4ModifyTaskState extends ReqBase {
             if (null == field.get(this)) {
                 throw new RuntimeException(field.getName() + "is null");
             }
+
+            if (String.class.equals(field.getType())) {
+                if ("".equals(field.get(this))) {
+                    throw new RuntimeException(field.getName() + "is string is empty");
+                }
+            }
         }
     }
 

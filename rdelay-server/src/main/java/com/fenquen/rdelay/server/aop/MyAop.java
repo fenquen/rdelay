@@ -1,4 +1,4 @@
-package com.fenquen.rdelay.dashboard.aop;
+package com.fenquen.rdelay.server.aop;
 
 import com.fenquen.rdelay.model.resp.Resp4Query;
 import com.fenquen.rdelay.model.resp.RespBase;
@@ -7,7 +7,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -41,23 +40,20 @@ public class MyAop {
     }
 
     /**
-     *
      * @param proceedingJoinPoint
      * @return
      * @throws Throwable
      */
     @Around("webLog()")
     public Object around(ProceedingJoinPoint proceedingJoinPoint) {
-        Resp4Query resp4Query = new Resp4Query();
         try {
-            resp4Query.data = proceedingJoinPoint.proceed();
-            resp4Query.success();
+            return proceedingJoinPoint.proceed();
         } catch (Throwable throwable) {
             LOGGER.error("", throwable);
-            resp4Query.fail(throwable);
+            RespBase respBase = new RespBase();
+            return respBase.fail(throwable);
         }
 
-        return resp4Query;
     }
 
 }

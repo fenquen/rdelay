@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class MyAop {
     private static final Logger LOGGER = LoggerFactory.getLogger(MyAop.class);
 
-    @Pointcut("execution(public * com.fenquen.rdelay.dashboard.controller..*.*(..))")
+    @Pointcut("execution(public * com.fenquen.rdelay.server.controller..*.*(..))")
     public void webLog() {
     }
 

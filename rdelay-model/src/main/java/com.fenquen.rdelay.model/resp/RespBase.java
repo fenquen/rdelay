@@ -2,8 +2,10 @@ package com.fenquen.rdelay.model.resp;
 
 import com.fenquen.rdelay.model.Persistence;
 
-public class RespBase  {
+public class RespBase {
     public Boolean success;
+
+    public String errClazzName;
 
     public String errMsg;
 
@@ -15,6 +17,7 @@ public class RespBase  {
 
     public RespBase fail(Throwable throwable) {
         success = false;
+        errClazzName = throwable.getClass().getSimpleName();
         errMsg = throwable.getMessage();
         failInternal(throwable);
         return this;

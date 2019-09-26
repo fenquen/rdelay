@@ -3,8 +3,10 @@ package com.fenquen.rdelay.server.http;
 import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.Persistence;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
+import com.fenquen.rdelay.model.resp.ReceiveResp;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.config.Config;
+import com.fenquen.rdelay.server.exception.TaskReceiveFailException;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.server.zset_consumer.ZsetConsumer4NORMAL_ZSET;
 import org.apache.http.HttpResponse;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class FutureCallBack0 implements FutureCallback<HttpResponse>, InitializingBean {
@@ -43,11 +46,11 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
     private KafkaTemplate<String, String> kafkaTemplate;
     private static KafkaTemplate<String, String> kafkaTemplate_;
 
-
     private TaskBase task;
 
-    public FutureCallBack0() {
+    public static final ConcurrentHashMap<String, ReceiveResp> TASKID_RECEIVE_RESP = new ConcurrentHashMap<>();
 
+    public FutureCallBack0() {
     }
 
     public FutureCallBack0(TaskBase abstractTask) {
@@ -60,8 +63,27 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
         try {
             String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
+
+            ReceiveResp receiveResp = JSON.parseObject(executionRespJsonStr, ReceiveResp.class);
+
+
+            // task execution success includes 2 steps:1st task receive successes,2nd task execution itself successes
+            if (receiveResp.success) {
+                // wait for the task execution itself to determine next step
+                // store in memory storage
+
+                TASKID_RECEIVE_RESP.put(receiveResp.taskid, receiveResp);
+
+            } else {
+                // task receive fail,it means task execution fails
+                ExecutionResp executionResp_ = new ExecutionResp(task);
+                executionResp_.fail(new TaskReceiveFailException(executionResp_.errMsg));
+            }
+
+
             // sync execution_resp to dashboard
             sendKafka(executionResp.getDbMetaData(), executionRespJsonStr);
+
             if (executionResp.success) {
                 successProcess();
             } else {

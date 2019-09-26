@@ -20,13 +20,11 @@ public class ExecutionResp extends RespBase implements Persistence {
     }
 
     @Override
-    public void failInternal(Throwable throwable) {
-        super.failInternal(throwable);
+    void failInternal(Throwable throwable) {
     }
 
     @Override
-    protected void successInternal() {
-        super.successInternal();
+    void successInternal() {
         executionTime = System.currentTimeMillis();
     }
 

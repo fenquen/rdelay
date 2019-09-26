@@ -7,12 +7,10 @@ public class Resp4Query extends RespBase {
 
     @Override
     void successInternal() {
-        super.successInternal();
 
     }
 
     @Override
     void failInternal(Throwable throwable) {
-        super.failInternal(throwable);
     }
 }

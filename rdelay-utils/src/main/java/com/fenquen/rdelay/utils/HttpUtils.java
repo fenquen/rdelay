@@ -64,15 +64,12 @@ public class HttpUtils {
 
     public static Future<HttpResponse> postStringContentAsync(String url,
                                                               String stringContent,
-                                                              FutureCallback<HttpResponse> futureCallback) {
+                                                              FutureCallback<HttpResponse> futureCallback) throws UnsupportedEncodingException {
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
-        try {
-            httpPost.setEntity(new StringEntity(stringContent));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return null;
-        }
+
+        httpPost.setEntity(new StringEntity(stringContent));
+
 
         return HTTP_CLIENT_ASYNC.execute(httpPost, futureCallback);
     }

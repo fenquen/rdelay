@@ -85,7 +85,7 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
         TASK_ID_QUEUE_LIST.get(Math.abs(taskId.hashCode()) % Config.NORMAL_ZSET_CONSUME_QUEUE_COUNT).add(taskId);
     }
 
-    private void processTaskIdFromNormalZset(final String taskId) {
+    private void processTaskIdFromNormalZset(final String taskId) throws Exception {
         // this means that taskid is not in NORMAL_ZSET,no need to go ahead.
         if (!redisOperator.normal2Temp(taskId, System.currentTimeMillis())) {
             return;

@@ -1,5 +1,6 @@
 package com.fenquen.rdelay.server.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.common.Pair;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.resp.ReceiveResp;
@@ -9,6 +10,7 @@ import com.fenquen.rdelay.server.http.HttpAsyncHandler;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.server.utils.RdelayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,7 +40,9 @@ public class ExecutionRespPortal {
     public RespBase receiveExecResp(@RequestBody ExecutionResp executionResp) {
 
         EXEC_RESP_PROCESS_POOL.submit(() -> {
-            Pair<ReceiveResp, TaskBase> pair = HttpAsyncHandler.TASK_ID_PAIR.get(executionResp.taskid);
+            httpAsyncHandler.sendKafka(executionResp);
+
+            Pair<ReceiveResp, TaskBase> pair = HttpAsyncHandler.TASK_ID_PAIR.remove(executionResp.taskid);
             // means receiver actually has received task but failed to let server know
             if (pair == null) {
                 String taskJsonStr = redisOperator.getTaskJsonStr(executionResp.taskid);

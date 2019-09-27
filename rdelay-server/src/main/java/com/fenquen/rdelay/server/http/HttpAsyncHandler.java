@@ -80,7 +80,7 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
                 executionResp_.fail(new TaskReceiveFailException(executionResp_.errMsg));
 
                 // sync execution_resp to dashboard
-                sendKafka(executionResp_.getDbMetaData(), executionRespJsonStr);
+                sendKafka(executionResp_);
                 failureProcess(task);
             }
 
@@ -98,7 +98,7 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
         executionResp.fail(e);
 
         // sync execution_resp to dashboard
-        sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
+        sendKafka(executionResp);
 
         failureProcess(task);
     }
@@ -108,9 +108,9 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
 
     }
 
-    private void sendKafka(Persistence.DbMetaData dbMetaData, String jsonStr) {
+    public void sendKafka(Persistence persistence){
         if (dashBoardEnabled_) {
-            kafkaTemplate_.send(destTopicName_, dbMetaData.name(), jsonStr);
+            kafkaTemplate_.send(destTopicName_, persistence.getDbMetaData().name(), JSON.toJSONString(persistence));
         }
     }
 
@@ -148,7 +148,7 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.COMPLETED_NORMALLY;
-            sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+            sendKafka(task);
 
         }
     }
@@ -161,14 +161,14 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
 
             // update and sync taskState to dashboard
             task.taskState = TaskBase.TaskState.ABORTED_WITH_TOO_MANY_RETRIES;
-            sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+            sendKafka(task);
             return;
         }
 
         // update retried num
         task.versionNum = redisOperator_.updateTask(task);
         // update and sync retried count to dashboard
-        sendKafka(task.getDbMetaData(), JSON.toJSONString(task));
+        sendKafka(task);
 
 
         int power = 1;

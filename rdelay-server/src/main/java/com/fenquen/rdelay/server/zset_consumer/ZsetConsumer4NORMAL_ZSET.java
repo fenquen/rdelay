@@ -1,11 +1,10 @@
 package com.fenquen.rdelay.server.zset_consumer;
 
-import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.server.config.Config;
 import com.fenquen.rdelay.model.task.TaskBase;
-import com.fenquen.rdelay.server.http.FutureCallBack0;
+import com.fenquen.rdelay.server.http.HttpAsyncHandler;
 import com.fenquen.rdelay.server.redis.RedisOperator;
+import com.fenquen.rdelay.server.utils.RdelayUtils;
 import com.fenquen.rdelay.utils.HttpUtils;
 import com.fenquen.rdelay.utils.ThreadSafeWeakMap;
 import org.quartz.CronExpression;
@@ -101,20 +100,9 @@ public class ZsetConsumer4NORMAL_ZSET extends ZsetConsumerBase implements Initia
 
 
         // not an elegant style to determine which sub class of TaskBase it actually is by a json string barely,need to be optimized
-        String taskTypeStr = taskId.substring(0, taskId.indexOf("@"));
-        TaskType taskType = TaskType.valueOf(taskTypeStr);
+        TaskBase task =  RdelayUtils.parseTask(taskId,taskJsonStr);
 
-        TaskBase task = null;
-        switch (taskType) {
-            case REFLECTION:
-                task = JSON.parseObject(taskJsonStr, taskType.clazz);
-                break;
-            case STR_CONTENT:
-                task = JSON.parseObject(taskJsonStr, taskType.clazz);
-                break;
-        }
-
-        FutureCallBack0 handler = new FutureCallBack0(task);
+        HttpAsyncHandler handler = new HttpAsyncHandler(task);
 
         HttpUtils.postStringContentAsync(task.taskReceiveUrl, taskJsonStr, handler);
 

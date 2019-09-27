@@ -1,155 +1,216 @@
 package com.fenquen.rdelay.client.receiver;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.exception.HttpRespReadException;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
+import com.fenquen.rdelay.model.resp.ReceiveResp;
 import com.fenquen.rdelay.model.task.ReflectionTask;
 import com.fenquen.rdelay.model.task.StrContentTask;
+import com.fenquen.rdelay.model.task.TaskBase;
+import com.fenquen.rdelay.model.task.TaskType;
+import com.fenquen.rdelay.utils.HttpUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RestController
-public class Receiver implements ApplicationContextAware {
-    {
-        System.out.println("init");
-        // SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-    }
-
+public class Receiver implements ApplicationContextAware, InitializingBean {
+    private ThreadPoolExecutor threadPoolExecutor;
     private ApplicationContext applicationContext;
 
     @Autowired(required = false)
     private StrContentTaskConsumer strContentTaskConsumer;
 
-    @RequestMapping(value = "/rdelay/receiveTask/STR_CONTENT", method = RequestMethod.POST)
-    public ExecutionResp receiveStrContentTask(@RequestBody StrContentTask strContentTask) {
-        ExecutionResp executionResp = new ExecutionResp(strContentTask);
-        try {
-            if (strContentTaskConsumer != null) {
-                strContentTaskConsumer.consumeTask(strContentTask);
-            }
-            executionResp.success();
-        } catch (Exception e) {
-            e.printStackTrace();
-            executionResp.fail(e);
-        }
+    private ConcurrentHashMap<String, TaskBase> taskid_taskBase = new ConcurrentHashMap<>();
 
-        return executionResp;
-    }
+    private final Logger LOGGER = Logger.getLogger(Receiver.class.getName());
 
-    @RequestMapping(value = "/rdelay/receiveTask/REFLECT", method = RequestMethod.POST)
-    public ExecutionResp receiveReflectTask(@RequestBody ReflectionTask reflectionTask) {
-        ExecutionResp executionResp = new ExecutionResp(reflectionTask);
-        try {
-            // paramTypes
-            Class[] paramTypes = new Class[reflectionTask.paramTypeNames.length];
-            int a = 0;
-            for (String paramTypeName : reflectionTask.paramTypeNames) {
-                paramTypes[a++] = Class.forName(paramTypeName);
-            }
-
-            // params
-            Object[] params = new Object[reflectionTask.params.length];
-            for (int b = 0; params.length > b; b++) {
-                String rawParam = reflectionTask.params[b];
-                Object param;
-
-                // need to know whether param is wrapper class
-                String paramTypeName = paramTypes[b].getName();
-                switch (paramTypeName) {
-                    case "java.lang.String":
-                        param = rawParam;
-                        break;
-                    case "java.lang.Character":
-                        param = rawParam.charAt(0);
-                        break;
-                    case "java.lang.Byte":
-                        param = Byte.valueOf(rawParam);
-                        break;
-                    case "java.lang.Short":
-                        param = Short.valueOf(rawParam);
-                        break;
-                    case "java.lang.Integer":
-                        param = Integer.valueOf(rawParam);
-                        break;
-                    case "java.lang.Long":
-                        param = Long.valueOf(rawParam);
-                        break;
-                    case "java.lang.Float":
-                        param = Float.valueOf(rawParam);
-                        break;
-                    case "java.lang.Double":
-                        param = Double.valueOf(rawParam);
-                        break;
-                    default:
-                        param = JSON.parseObject(rawParam, paramTypes[b]);
-                }
-
-                params[b] = param;
-            }
-
-            // targetClass
-            Class targetClass = Class.forName(reflectionTask.className);
-
-            // targetMethod
-            Method targetMethod = null;
-            try {
-                targetMethod = targetClass.getDeclaredMethod(reflectionTask.methodName, paramTypes);
-            } catch (NoSuchMethodException e) {
-                // noop
-            }
-
-            if (null == targetMethod) {
-                targetMethod = targetClass.getMethod(reflectionTask.methodName, paramTypes);
-            }
-
-            targetMethod.setAccessible(true);
-
-            // trig method when static
-            if (Modifier.isStatic(targetMethod.getModifiers())) {
-                targetMethod.invoke(paramTypes, params);
-                executionResp.success();
-                return executionResp;
-            }
-
-            // not static,get the instance
-            Object targetObj = null;
-
-            Map<String, Object> beanMap = applicationContext.getBeansOfType(targetClass, true, false);
-
-            // the instance not found in spring bean context,invoke its non-arg constructor
-            if (beanMap == null || beanMap.size() == 0) {
-                if (targetClass.isInterface() || Modifier.isAbstract(targetClass.getModifiers())) {
-                    throw new NoSuchBeanDefinitionException(targetClass);
-                }
-
-                targetObj = targetClass.newInstance();
-            } else {
-                // the 1st instance
-                targetObj = beanMap.values().toArray()[0];
-            }
-
-            targetMethod.invoke(targetObj, params);
-            executionResp.success();
-        } catch (Exception e) {
-            e.printStackTrace();
-            executionResp.fail(e);
-        }
-
-        return executionResp;
-    }
-
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        System.out.println("setApplicationContext");
+        LOGGER.info("setApplicationContext");
         this.applicationContext = applicationContext;
     }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        threadPoolExecutor = new ThreadPoolExecutor(6, 16,
+                60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                runnable -> {
+                    Thread thread = new Thread(runnable);
+                    thread.setName("RDEALY_TASK_EXEC_THREAD_POOL" + UUID.randomUUID());
+                    return thread;
+                });
+    }
+
+
+    @RequestMapping(value = "/rdelay/receiveTask/{taskTypeStr}", method = RequestMethod.POST)
+    public ReceiveResp receiveTask(@PathVariable String taskTypeStr,
+                                   @RequestBody String taskJsonStr) {
+
+        TaskType taskType = TaskType.valueOf(taskTypeStr);
+        TaskBase task = JSON.parseObject(taskJsonStr, taskType.clazz);
+
+        ReceiveResp receiveResp = new ReceiveResp(task);
+
+        try {
+            threadPoolExecutor.submit(() -> {
+                ExecutionResp executionResp = new ExecutionResp(task);
+                try {
+                    processTask(task);
+                    executionResp.success();
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, e.getMessage(), e);
+                    executionResp.fail(e);
+                }
+
+                // the goal is solely to submit the exec resp to rdelay server
+                try {
+                    HttpUtils.postStringContentSync("", JSON.toJSONString(executionResp));
+                } catch (IOException e) { // include http status 500
+                    LOGGER.log(Level.INFO, e.getMessage(), e);
+                } catch (HttpRespReadException e) {
+                    // rdelay always response success when status code is 200 because the goal is just to submit
+                    LOGGER.info("HttpRespReadException ignore");
+                }
+            });
+        } catch (Exception e) {
+            receiveResp.fail(e);
+            return receiveResp;
+        }
+
+        receiveResp.success();
+        return receiveResp;
+    }
+
+
+    private void processTask(TaskBase task) throws Exception {
+        switch (task.taskType) {
+            case STR_CONTENT:
+                receiveStrContentTask((StrContentTask) task);
+                break;
+            case REFLECTION:
+                receiveReflectTask((ReflectionTask) task);
+                break;
+            default:
+                throw new UnsupportedOperationException("can not support task type " + task.taskType.name());
+        }
+    }
+
+
+    // @RequestMapping(value = "/rdelay/receiveTask/STR_CONTENT", method = RequestMethod.POST)
+    private void receiveStrContentTask(StrContentTask strContentTask) throws Exception {
+        if (strContentTaskConsumer != null) {
+            strContentTaskConsumer.consumeTask(strContentTask);
+        }
+    }
+
+    // @RequestMapping(value = "/rdelay/receiveTask/REFLECT", method = RequestMethod.POST)
+    private void receiveReflectTask(ReflectionTask reflectionTask) throws Exception {
+
+        // paramTypes
+        Class[] paramTypes = new Class[reflectionTask.paramTypeNames.length];
+        int a = 0;
+        for (String paramTypeName : reflectionTask.paramTypeNames) {
+            paramTypes[a++] = Class.forName(paramTypeName);
+        }
+
+        // params
+        Object[] params = new Object[reflectionTask.params.length];
+        for (int b = 0; params.length > b; b++) {
+            String rawParam = reflectionTask.params[b];
+            Object param;
+
+            // need to know whether param is wrapper class
+            String paramTypeName = paramTypes[b].getName();
+            switch (paramTypeName) {
+                case "java.lang.String":
+                    param = rawParam;
+                    break;
+                case "java.lang.Character":
+                    param = rawParam.charAt(0);
+                    break;
+                case "java.lang.Byte":
+                    param = Byte.valueOf(rawParam);
+                    break;
+                case "java.lang.Short":
+                    param = Short.valueOf(rawParam);
+                    break;
+                case "java.lang.Integer":
+                    param = Integer.valueOf(rawParam);
+                    break;
+                case "java.lang.Long":
+                    param = Long.valueOf(rawParam);
+                    break;
+                case "java.lang.Float":
+                    param = Float.valueOf(rawParam);
+                    break;
+                case "java.lang.Double":
+                    param = Double.valueOf(rawParam);
+                    break;
+                default:
+                    param = JSON.parseObject(rawParam, paramTypes[b]);
+            }
+
+            params[b] = param;
+        }
+
+        // targetClass
+        Class targetClass = Class.forName(reflectionTask.className);
+
+        // targetMethod
+        Method targetMethod = null;
+        try {
+            targetMethod = targetClass.getDeclaredMethod(reflectionTask.methodName, paramTypes);
+        } catch (NoSuchMethodException e) {
+            // noop
+        }
+
+        if (null == targetMethod) {
+            targetMethod = targetClass.getMethod(reflectionTask.methodName, paramTypes);
+        }
+
+        targetMethod.setAccessible(true);
+
+        // trig method when static
+        if (Modifier.isStatic(targetMethod.getModifiers())) {
+            targetMethod.invoke(paramTypes, params);
+            return;
+        }
+
+        // not static,get the instance
+        Object targetObj = null;
+
+        Map<String, Object> beanMap = applicationContext.getBeansOfType(targetClass, true, false);
+
+        // the instance not found in spring bean context,invoke its non-arg constructor
+        if (beanMap == null || beanMap.size() == 0) {
+            if (targetClass.isInterface() || Modifier.isAbstract(targetClass.getModifiers())) {
+                throw new NoSuchBeanDefinitionException(targetClass);
+            }
+
+            targetObj = targetClass.newInstance();
+        } else {
+            // the 1st instance
+            targetObj = beanMap.values().toArray()[0];
+        }
+
+        targetMethod.invoke(targetObj, params);
+
+    }
+
+
 }

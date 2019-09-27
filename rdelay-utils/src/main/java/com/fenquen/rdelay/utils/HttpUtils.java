@@ -1,7 +1,9 @@
 package com.fenquen.rdelay.utils;
 
+import com.fenquen.rdelay.exception.HttpRespReadException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
@@ -36,8 +38,9 @@ public class HttpUtils {
         }
     }
 
-    public static String postStringContentSync(String url, String stringContent) throws Exception {
+    public static String postStringContentSync(String url, String stringContent) throws IOException, HttpRespReadException {
         HttpPost httpPost = new HttpPost(url);
+
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
         httpPost.setEntity(new StringEntity(stringContent));
 
@@ -45,10 +48,17 @@ public class HttpUtils {
 
         int code = httpResponse.getStatusLine().getStatusCode();
         if (code != HttpStatus.SC_OK) {
-            throw new RuntimeException("HttpStatus:" + code);
+            throw new IOException("HttpStatus:" + code);
         }
 
-        return EntityUtils.toString(httpResponse.getEntity());
+        String respStr;
+        try {
+            respStr = EntityUtils.toString(httpResponse.getEntity());
+        } catch (IOException e) {
+            throw new HttpRespReadException(e);
+        }
+
+        return respStr;
     }
 
 

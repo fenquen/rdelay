@@ -65,7 +65,7 @@ public abstract class Req4CreateTask extends ReqBase {
         // use cron or not
         if (enableCron) {
             if (null == cronExpression || "".equals(cronExpression.trim())) {
-                throw new IllegalArgumentException("cronExpression is virtually empty when cron enabled");
+                throw new RuntimeException("cronExpression is virtually empty when cron enabled");
             }
         } else {
             if (null == executionTime || System.currentTimeMillis() >= executionTime) {

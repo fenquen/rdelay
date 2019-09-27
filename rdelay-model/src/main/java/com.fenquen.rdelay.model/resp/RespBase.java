@@ -1,7 +1,5 @@
 package com.fenquen.rdelay.model.resp;
 
-import com.fenquen.rdelay.model.Persistence;
-
 public class RespBase {
     public Boolean success;
 

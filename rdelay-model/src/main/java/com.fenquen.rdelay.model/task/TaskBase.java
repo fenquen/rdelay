@@ -67,6 +67,8 @@ public class TaskBase implements Persistence {
         COMPLETED_NORMALLY,
         ABORTED_WITH_TOO_MANY_RETRIES
     }
+
+
 }
 
 

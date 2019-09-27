@@ -1,12 +1,13 @@
 package com.fenquen.rdelay.server.http;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.exception.TaskReceiveFailException;
 import com.fenquen.rdelay.model.Persistence;
+import com.fenquen.rdelay.model.common.Pair;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.resp.ReceiveResp;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.server.config.Config;
-import com.fenquen.rdelay.server.exception.TaskReceiveFailException;
 import com.fenquen.rdelay.server.redis.RedisOperator;
 import com.fenquen.rdelay.server.zset_consumer.ZsetConsumer4NORMAL_ZSET;
 import org.apache.http.HttpResponse;
@@ -26,8 +27,8 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class FutureCallBack0 implements FutureCallback<HttpResponse>, InitializingBean {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FutureCallBack0.class);
+public class HttpAsyncHandler implements FutureCallback<HttpResponse>, InitializingBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpAsyncHandler.class);
 
     @Autowired
     private RedisOperator redisOperator;// = SpringUtils.getBean(RedisOperator.class);
@@ -48,12 +49,12 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
 
     private TaskBase task;
 
-    public static final ConcurrentHashMap<String, ReceiveResp> TASKID_RECEIVE_RESP = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String, Pair<ReceiveResp, TaskBase>> TASK_ID_PAIR = new ConcurrentHashMap<>();
 
-    public FutureCallBack0() {
+    public HttpAsyncHandler() {
     }
 
-    public FutureCallBack0(TaskBase abstractTask) {
+    public HttpAsyncHandler(TaskBase abstractTask) {
         //  SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
         this.task = abstractTask;
     }
@@ -62,7 +63,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
     public void completed(HttpResponse httpResponse) {
         try {
             String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
-            ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
+         //   ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
 
             ReceiveResp receiveResp = JSON.parseObject(executionRespJsonStr, ReceiveResp.class);
 
@@ -71,27 +72,21 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
             if (receiveResp.success) {
                 // wait for the task execution itself to determine next step
                 // store in memory storage
-
-                TASKID_RECEIVE_RESP.put(receiveResp.taskid, receiveResp);
+                TASK_ID_PAIR.put(receiveResp.taskid, new Pair<>(receiveResp, task));
 
             } else {
                 // task receive fail,it means task execution fails
                 ExecutionResp executionResp_ = new ExecutionResp(task);
                 executionResp_.fail(new TaskReceiveFailException(executionResp_.errMsg));
+
+                // sync execution_resp to dashboard
+                sendKafka(executionResp_.getDbMetaData(), executionRespJsonStr);
+                failureProcess(task);
             }
 
-
-            // sync execution_resp to dashboard
-            sendKafka(executionResp.getDbMetaData(), executionRespJsonStr);
-
-            if (executionResp.success) {
-                successProcess();
-            } else {
-                failureProcess();
-            }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            failureProcess();
+            failureProcess(task);
         }
     }
 
@@ -99,14 +94,13 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
     public void failed(Exception e) {
         LOGGER.error(e.getMessage(), e);
         // need to build a execution resp manually
-        ExecutionResp executionResp = new ExecutionResp();
-        executionResp.taskid = task.taskid;
+        ExecutionResp executionResp = new ExecutionResp(task);
         executionResp.fail(e);
 
         // sync execution_resp to dashboard
         sendKafka(executionResp.getDbMetaData(), JSON.toJSONString(executionResp));
 
-        failureProcess();
+        failureProcess(task);
     }
 
     @Override
@@ -120,7 +114,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
         }
     }
 
-    private void successProcess() {
+    public void successProcess(TaskBase task) {
         // need to know whether the task is cron or not
         if (task.enableCron) {
             CronExpression cronExpression = ZsetConsumer4NORMAL_ZSET.TASK_ID_CRON_EXPRESSION.get(task.taskid);
@@ -159,7 +153,7 @@ public class FutureCallBack0 implements FutureCallback<HttpResponse>, Initializi
         }
     }
 
-    private void failureProcess() {
+    public void failureProcess(TaskBase task) {
         // execution failed
         task.retriedCount++;
         if (task.retriedCount > task.maxRetryCount) {

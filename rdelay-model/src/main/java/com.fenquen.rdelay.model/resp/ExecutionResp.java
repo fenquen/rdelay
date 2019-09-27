@@ -10,9 +10,20 @@ public class ExecutionResp extends RespBase implements Persistence {
 
     public long executionTime;
 
+    public long expectedExecutionTime;
+
+    public Boolean retry;
+
+    /**
+     * null means server did not get the receiveResp, not know whether receive is successful or not
+     */
+    public ReceiveResp receiveResp;
+
     public ExecutionResp(TaskBase taskBase) {
         taskid = taskBase.taskid;
         taskName = taskBase.name;
+        expectedExecutionTime = taskBase.executionTime;
+        retry = taskBase.retriedCount > 0;
     }
 
     public ExecutionResp() {

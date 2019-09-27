@@ -15,4 +15,5 @@ public interface Persistence {
             this.tableName = tableName;
         }
     }
+
 }

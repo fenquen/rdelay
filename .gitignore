@@ -24,5 +24,4 @@ rdelay-dashboard/src/test/
 rdelay-cli/target/classes/
 rdelay-example/rdelay-example-cli/target/
 .DS_Store
-rdelay-cli.iml
-rdelay-example-cli.iml
+rdelay-exception/rdelay-exception.iml

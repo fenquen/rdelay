@@ -170,6 +170,6 @@ public class RedisOperator {
     }
 
     public Boolean transferAllTemp2Normal() {
-        return stringRedisTemplate.execute(luascript4TransferAllTemp2Normal, Arrays.asList(Config.TEMP_ZSET, Config.NORMAL_ZSET));
+        return stringRedisTemplate.execute(luascript4TransferAllTemp2Normal, Arrays.asList(Config.TEMP_ZSET, Config.NORMAL_ZSET),"");
     }
 }

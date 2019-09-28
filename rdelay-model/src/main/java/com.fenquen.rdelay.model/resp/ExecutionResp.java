@@ -8,9 +8,9 @@ public class ExecutionResp extends RespBase implements Persistence {
 
     public String taskName;
 
-    public long executionTime;
-
     public long expectedExecutionTime;
+
+    public long executionTime;
 
     public Boolean retry;
 

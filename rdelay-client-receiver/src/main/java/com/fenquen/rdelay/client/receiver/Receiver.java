@@ -15,6 +15,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -36,15 +38,19 @@ public class Receiver implements ApplicationContextAware, InitializingBean, Disp
     @Autowired(required = false)
     private StrContentTaskConsumer strContentTaskConsumer;
 
+    private String submitUrl = "http://127.0.0.1:8086/receiveExecResp";
+
     private ConcurrentHashMap<String, TaskBase> taskid_taskBase = new ConcurrentHashMap<>();
 
     private static final Logger LOGGER = Logger.getLogger(Receiver.class.getName());
+
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         LOGGER.info("setApplicationContext");
         this.applicationContext = applicationContext;
     }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -56,6 +62,15 @@ public class Receiver implements ApplicationContextAware, InitializingBean, Disp
                     thread.setName("RDEALY_TASK_EXEC_THREAD_POOL" + UUID.randomUUID());
                     return thread;
                 });
+
+        try {
+            Properties properties = new Properties();
+            properties.load(getClass().getResourceAsStream(""));
+            submitUrl = properties.getProperty("submit.url");
+        } catch (Exception e) {
+            // noop
+        }
+
     }
 
 
@@ -87,7 +102,7 @@ public class Receiver implements ApplicationContextAware, InitializingBean, Disp
 
                 // the goal is solely to submit the exec resp to rdelay server,the resp status code is enough
                 try {
-                    HttpUtils.postStringContentSync("", JSON.toJSONString(executionResp));
+                    HttpUtils.postStringContentSync(submitUrl, JSON.toJSONString(executionResp));
                 } catch (IOException e) { // how to compensate
                     LOGGER.log(Level.INFO, e.getMessage(), e);
                 } catch (BusinessProcessException e) { // http status not 200,how to compensate

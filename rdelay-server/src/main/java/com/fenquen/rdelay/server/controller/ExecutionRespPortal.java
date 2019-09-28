@@ -43,6 +43,7 @@ public class ExecutionRespPortal {
             httpAsyncHandler.sendKafka(executionResp);
 
             Pair<ReceiveResp, TaskBase> pair = HttpAsyncHandler.TASK_ID_PAIR.remove(executionResp.taskid);
+
             // means receiver actually has received task but failed to let server know
             if (pair == null) {
                 String taskJsonStr = redisOperator.getTaskJsonStr(executionResp.taskid);

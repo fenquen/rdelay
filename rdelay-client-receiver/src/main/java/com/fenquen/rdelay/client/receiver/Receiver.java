@@ -1,6 +1,7 @@
 package com.fenquen.rdelay.client.receiver;
 
 import com.alibaba.fastjson.JSON;
+import com.fenquen.rdelay.exception.BusinessProcessException;
 import com.fenquen.rdelay.exception.HttpRespReadException;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.resp.ReceiveResp;
@@ -10,6 +11,7 @@ import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.task.TaskType;
 import com.fenquen.rdelay.utils.HttpUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @RestController
-public class Receiver implements ApplicationContextAware, InitializingBean {
+public class Receiver implements ApplicationContextAware, InitializingBean, DisposableBean {
     private ThreadPoolExecutor threadPoolExecutor;
     private ApplicationContext applicationContext;
 
@@ -36,7 +38,7 @@ public class Receiver implements ApplicationContextAware, InitializingBean {
 
     private ConcurrentHashMap<String, TaskBase> taskid_taskBase = new ConcurrentHashMap<>();
 
-    private final Logger LOGGER = Logger.getLogger(Receiver.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Receiver.class.getName());
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -56,6 +58,12 @@ public class Receiver implements ApplicationContextAware, InitializingBean {
                 });
     }
 
+
+    @Override
+    public void destroy() throws Exception {
+        threadPoolExecutor.shutdown();
+        HttpUtils.destroy();
+    }
 
     @RequestMapping(value = "/rdelay/receiveTask/{taskTypeStr}", method = RequestMethod.POST)
     public ReceiveResp receiveTask(@PathVariable String taskTypeStr,
@@ -77,10 +85,12 @@ public class Receiver implements ApplicationContextAware, InitializingBean {
                     executionResp.fail(e);
                 }
 
-                // the goal is solely to submit the exec resp to rdelay server
+                // the goal is solely to submit the exec resp to rdelay server,the resp status code is enough
                 try {
                     HttpUtils.postStringContentSync("", JSON.toJSONString(executionResp));
-                } catch (IOException e) { // include http status 500
+                } catch (IOException e) { // how to compensate
+                    LOGGER.log(Level.INFO, e.getMessage(), e);
+                } catch (BusinessProcessException e) { // http status not 200,how to compensate
                     LOGGER.log(Level.INFO, e.getMessage(), e);
                 } catch (HttpRespReadException e) {
                     // rdelay always response success when status code is 200 because the goal is just to submit
@@ -211,6 +221,4 @@ public class Receiver implements ApplicationContextAware, InitializingBean {
         targetMethod.invoke(targetObj, params);
 
     }
-
-
 }

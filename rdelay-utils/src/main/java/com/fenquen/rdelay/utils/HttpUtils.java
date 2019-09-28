@@ -1,9 +1,9 @@
 package com.fenquen.rdelay.utils;
 
+import com.fenquen.rdelay.exception.BusinessProcessException;
 import com.fenquen.rdelay.exception.HttpRespReadException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
@@ -21,24 +21,29 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HttpUtils {
+    private static final Logger LOGGER = Logger.getLogger(HttpUtils.class.getName());
+
     public static Boolean USE_ASYNC = false;
 
-    private static final CloseableHttpClient HTTP_CLIENT_SYNC = HttpClientBuilder.create().build();
+    private static CloseableHttpClient HTTP_CLIENT_SYNC;
 
     private static CloseableHttpAsyncClient HTTP_CLIENT_ASYNC;
 
     static {
         try {
-            HTTP_CLIENT_ASYNC = buildHttpClientAsync();
+            HTTP_CLIENT_SYNC = HttpClientBuilder.create().build();
+            HTTP_CLIENT_ASYNC = buildAsyncHttpClient();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, e.getMessage(), e);
         }
     }
 
-    public static String postStringContentSync(String url, String stringContent) throws IOException, HttpRespReadException {
+    public static String postStringContentSync(String url, String stringContent)
+            throws HttpRespReadException, IOException, BusinessProcessException {
         HttpPost httpPost = new HttpPost(url);
 
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
@@ -48,7 +53,7 @@ public class HttpUtils {
 
         int code = httpResponse.getStatusLine().getStatusCode();
         if (code != HttpStatus.SC_OK) {
-            throw new IOException("HttpStatus:" + code);
+            throw new BusinessProcessException("HttpStatus:" + code);
         }
 
         String respStr;
@@ -64,7 +69,9 @@ public class HttpUtils {
 
     public static Future<HttpResponse> postStringContentAsync(String url,
                                                               String stringContent,
-                                                              FutureCallback<HttpResponse> futureCallback) throws UnsupportedEncodingException {
+                                                              FutureCallback<HttpResponse> futureCallback)
+            throws UnsupportedEncodingException {
+
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
 
@@ -74,7 +81,7 @@ public class HttpUtils {
         return HTTP_CLIENT_ASYNC.execute(httpPost, futureCallback);
     }
 
-    private static CloseableHttpAsyncClient buildHttpClientAsync() throws Exception {
+    private static CloseableHttpAsyncClient buildAsyncHttpClient() throws Exception {
         IOReactorConfig ioReactorConfig = IOReactorConfig.custom().
                 setIoThreadCount(Runtime.getRuntime().availableProcessors())
                 .setSoKeepAlive(true)
@@ -106,5 +113,19 @@ public class HttpUtils {
         closeableHttpAsyncClient.start();
 
         return closeableHttpAsyncClient;
+    }
+
+    public static void destroy() {
+        try {
+            HTTP_CLIENT_SYNC.close();
+        } catch (IOException e) {
+            // no op
+        }
+
+        try {
+            HTTP_CLIENT_ASYNC.close();
+        } catch (IOException e) {
+            // no op
+        }
     }
 }

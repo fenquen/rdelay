@@ -54,19 +54,17 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
     public HttpAsyncHandler() {
     }
 
-    public HttpAsyncHandler(TaskBase abstractTask) {
+    public HttpAsyncHandler(TaskBase taskBase) {
         //  SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-        this.task = abstractTask;
+        this.task = taskBase;
     }
 
     @Override
     public void completed(HttpResponse httpResponse) {
         try {
             String executionRespJsonStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
-         //   ExecutionResp executionResp = JSON.parseObject(executionRespJsonStr, ExecutionResp.class);
 
             ReceiveResp receiveResp = JSON.parseObject(executionRespJsonStr, ReceiveResp.class);
-
 
             // task execution success includes 2 steps:1st task receive successes,2nd task execution itself successes
             if (receiveResp.success) {

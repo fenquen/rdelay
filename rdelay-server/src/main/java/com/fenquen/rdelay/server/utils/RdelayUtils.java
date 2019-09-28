@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.fenquen.rdelay.model.task.TaskBase;
 import com.fenquen.rdelay.model.task.TaskType;
 
-public class RdelayUtils {
+public abstract class RdelayUtils {
     public static TaskBase parseTask(String taskid, String taskJsonStr) {
         String taskTypeStr = taskid.substring(0, taskid.indexOf("@"));
         TaskType taskType = TaskType.valueOf(taskTypeStr);

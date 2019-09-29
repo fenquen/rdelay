@@ -5,14 +5,13 @@ import com.fenquen.rdelay.model.task.TaskBase;
 public class ReceiveResp extends RespBase {
     public static final long UNKNOWN_TIME = -1;
 
-
     public String taskid;
 
     public String taskName;
 
-    public long arrivalTime;
+    public Long arrivalTime;
 
-    public long receiveTime;
+    public Long receiveTime;
 
     @Override
     void failInternal(Throwable throwable) {

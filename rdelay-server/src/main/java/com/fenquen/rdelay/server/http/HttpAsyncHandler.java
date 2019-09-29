@@ -73,9 +73,8 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
                 TASK_ID_PAIR.put(receiveResp.taskid, new Pair<>(receiveResp, task));
 
             } else {
-                // task receive fail,it means task execution fails
-                ExecutionResp executionResp_ = new ExecutionResp(task);
-                executionResp_.fail(new TaskReceiveFailException(executionResp_.errMsg));
+                // task receive fail means task execution fails,manually build execution resp
+                ExecutionResp executionResp_ = new ExecutionResp(task,new TaskReceiveFailException(receiveResp.errMsg));
 
                 // sync execution_resp to dashboard
                 sendKafka(executionResp_);
@@ -92,8 +91,7 @@ public class HttpAsyncHandler implements FutureCallback<HttpResponse>, Initializ
     public void failed(Exception e) {
         LOGGER.error(e.getMessage(), e);
         // need to build a execution resp manually
-        ExecutionResp executionResp = new ExecutionResp(task);
-        executionResp.fail(e);
+        ExecutionResp executionResp = new ExecutionResp(task,e);
 
         // sync execution_resp to dashboard
         sendKafka(executionResp);

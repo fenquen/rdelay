@@ -8,9 +8,11 @@ public class ExecutionResp extends RespBase implements Persistence {
 
     public String taskName;
 
-    public long expectedExecutionTime;
+    public Long expectedExecutionTime;
 
-    public long executionTime;
+    public Long executionTime;
+
+    public Long executionEndTime;
 
     public Boolean retry;
 
@@ -24,6 +26,13 @@ public class ExecutionResp extends RespBase implements Persistence {
         taskName = taskBase.name;
         expectedExecutionTime = taskBase.executionTime;
         retry = taskBase.retriedCount > 0;
+        executionTime = System.currentTimeMillis();
+    }
+
+    public ExecutionResp(TaskBase taskBase, Throwable e) {
+        this(taskBase);
+        executionTime = null;
+        fail(e);
     }
 
     public ExecutionResp() {
@@ -36,7 +45,7 @@ public class ExecutionResp extends RespBase implements Persistence {
 
     @Override
     void successInternal() {
-        executionTime = System.currentTimeMillis();
+        executionEndTime = System.currentTimeMillis();
     }
 
     @Override

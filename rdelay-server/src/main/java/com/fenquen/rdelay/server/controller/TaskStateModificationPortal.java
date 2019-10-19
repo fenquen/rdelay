@@ -89,13 +89,14 @@ public class TaskStateModificationPortal {
     }
 
     private void postProcess(String taskid, TaskBase.TaskState taskState, String luaResult) {
+        if (!dashBoardEnabled) {
+            return;
+        }
+
         String[] arr = luaResult.split("&");
 
         String jsonStr = arr[0];
         Long versionNum = Long.valueOf(arr[1]);
-        if (!dashBoardEnabled) {
-            return;
-        }
 
         //String jsonStr = redisOperator.getTaskJsonStr(taskId);
 

@@ -1,6 +1,6 @@
 package com.fenquen.rdelay.utils;
 
-import com.fenquen.rdelay.exception.BusinessProcessException;
+import com.fenquen.rdelay.exception.HttpStatusNot200Exception;
 import com.fenquen.rdelay.exception.HttpRespReadException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -43,7 +43,7 @@ public class HttpUtils {
     }
 
     public static String postStringContentSync(String url, String stringContent)
-            throws HttpRespReadException, IOException, BusinessProcessException {
+            throws HttpRespReadException, IOException, HttpStatusNot200Exception {
         HttpPost httpPost = new HttpPost(url);
 
         httpPost.addHeader("content-type", "application/json;charset=UTF-8");
@@ -53,7 +53,7 @@ public class HttpUtils {
 
         int code = httpResponse.getStatusLine().getStatusCode();
         if (code != HttpStatus.SC_OK) {
-            throw new BusinessProcessException("HttpStatus:" + code);
+            throw new HttpStatusNot200Exception("HttpStatus:" + code);
         }
 
         String respStr;

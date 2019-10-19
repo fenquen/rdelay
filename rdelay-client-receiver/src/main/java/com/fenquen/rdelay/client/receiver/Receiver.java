@@ -1,7 +1,7 @@
 package com.fenquen.rdelay.client.receiver;
 
 import com.alibaba.fastjson.JSON;
-import com.fenquen.rdelay.exception.BusinessProcessException;
+import com.fenquen.rdelay.exception.HttpStatusNot200Exception;
 import com.fenquen.rdelay.exception.HttpRespReadException;
 import com.fenquen.rdelay.model.resp.ExecutionResp;
 import com.fenquen.rdelay.model.resp.ReceiveResp;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
@@ -105,7 +104,7 @@ public class Receiver implements ApplicationContextAware, InitializingBean, Disp
                     HttpUtils.postStringContentSync(submitUrl, JSON.toJSONString(executionResp));
                 } catch (IOException e) { // how to compensate
                     LOGGER.log(Level.INFO, e.getMessage(), e);
-                } catch (BusinessProcessException e) { // http status not 200,how to compensate
+                } catch (HttpStatusNot200Exception e) { // http status not 200,how to compensate
                     LOGGER.log(Level.INFO, e.getMessage(), e);
                 } catch (HttpRespReadException e) {
                     // rdelay always response success when status code is 200 because the goal is just to submit
